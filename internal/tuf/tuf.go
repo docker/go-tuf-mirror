@@ -6,11 +6,13 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	_ "embed"
 
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/theupdateframework/go-tuf/v2/metadata/config"
+	"github.com/theupdateframework/go-tuf/v2/metadata/fetcher"
 	"github.com/theupdateframework/go-tuf/v2/metadata/trustedmetadata"
 	"github.com/theupdateframework/go-tuf/v2/metadata/updater"
 )
@@ -113,4 +115,18 @@ func (t *tufClient) GetMetadata() trustedmetadata.TrustedMetadata {
 
 func (t *tufClient) MaxRootLength() int64 {
 	return t.cfg.RootMaxLength
+}
+
+func (t *tufClient) GetPriorRoots(metadataURL string) (map[string][]byte, error) {
+	rootMetadata := map[string][]byte{}
+	trustedMetadata := t.GetMetadata()
+	client := fetcher.DefaultFetcher{}
+	for i := 1; i < int(trustedMetadata.Root.Signed.Version); i++ {
+		meta, err := client.DownloadFile(metadataURL+fmt.Sprintf("/%d.root.json", i), t.MaxRootLength(), time.Second*15)
+		if err != nil {
+			return nil, fmt.Errorf("failed to download root metadata: %w", err)
+		}
+		rootMetadata[fmt.Sprintf("%d.root.json", i)] = meta
+	}
+	return rootMetadata, nil
 }

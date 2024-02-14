@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/docker/go-tuf-mirror/internal/tuf"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -17,7 +16,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/theupdateframework/go-tuf/v2/metadata"
-	"github.com/theupdateframework/go-tuf/v2/metadata/fetcher"
 )
 
 //go:embed 1.root-staging.json
@@ -52,29 +50,22 @@ func GetTufGitRepoMetadata() (*TufMetadata, error) {
 	}
 
 	trustedMetadata := tufClient.GetMetadata()
-	// if trustedMetadata.Root.Signed.ConsistentSnapshot {
-	// 	// TODO - implement consistent snapshot metadata
-	// 	return nil, fmt.Errorf("consistent snapshot metadata not implemented")
-	// }
 
 	rootMetadata := map[string][]byte{}
+	rootVersion := trustedMetadata.Root.Signed.Version
+	// get the previous versions of root metadata if any
+	if rootVersion != 1 {
+		rootMetadata, err = tufClient.GetPriorRoots(defaultMetadataURL)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get prior root metadata: %w", err)
+		}
+	}
+	// get current root metadata
 	rootBytes, err := trustedMetadata.Root.ToBytes(false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get root metadata: %w", err)
 	}
-	rootVersion := trustedMetadata.Root.Signed.Version
 	rootMetadata[fmt.Sprintf("%d.root.json", rootVersion)] = rootBytes
-	// get the previous versions of root metadata if any
-	if trustedMetadata.Root.Signed.Version != 1 {
-		client := fetcher.DefaultFetcher{}
-		for i := 1; i < int(trustedMetadata.Root.Signed.Version); i++ {
-			meta, err := client.DownloadFile(defaultMetadataURL+fmt.Sprintf("/%d.root.json", i), tufClient.MaxRootLength(), time.Second*15)
-			if err != nil {
-				return nil, fmt.Errorf("failed to download root metadata: %w", err)
-			}
-			rootMetadata[fmt.Sprintf("%d.root.json", i)] = meta
-		}
-	}
 
 	snapshotBytes, err := trustedMetadata.Snapshot.ToBytes(false)
 	if err != nil {
@@ -88,20 +79,27 @@ func GetTufGitRepoMetadata() (*TufMetadata, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get timestamp metadata: %w", err)
 	}
+
+	snapshotName := "snapshot.json"
+	targetsName := "targets.json"
+	if trustedMetadata.Root.Signed.ConsistentSnapshot {
+		snapshotName = fmt.Sprintf("%d.snapshot.json", trustedMetadata.Snapshot.Signed.Version)
+		targetsName = fmt.Sprintf("%d.targets.json", trustedMetadata.Targets[metadata.TARGETS].Signed.Version)
+	}
 	return &TufMetadata{
 		Root:      rootMetadata,
-		Snapshot:  map[string][]byte{"snapshot.json": snapshotBytes},
-		Targets:   map[string][]byte{"targets.json": targetsBytes},
+		Snapshot:  map[string][]byte{snapshotName: snapshotBytes},
+		Targets:   map[string][]byte{targetsName: targetsBytes},
 		Timestamp: timestampBytes,
 	}, nil
 }
 
-func BuildMetadataManifest(metadata *TufMetadata) (v1.Image, error) {
+func buildMetadataManifest(metadata *TufMetadata) (v1.Image, error) {
 	img := empty.Image
 	img = mutate.MediaType(img, types.OCIManifestSchema1)
 	img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
 	for _, role := range TufRoles {
-		layers, err := makeRoleLayer(role, metadata)
+		layers, err := makeRoleLayers(role, metadata)
 		if err != nil {
 			return nil, fmt.Errorf("failed to make role layer: %w", err)
 		}
@@ -113,27 +111,32 @@ func BuildMetadataManifest(metadata *TufMetadata) (v1.Image, error) {
 	return img, nil
 }
 
-func makeRoleLayer(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum, error) {
+func makeRoleLayers(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum, error) {
 	layers := new([]mutate.Addendum)
+	ann := map[string]string{tufRoleAnnotation: ""}
 	switch role {
 	case metadata.ROOT:
-		for name, data := range tufMetadata.Root {
-			*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(data, tufMetadataMediaType), Annotations: map[string]string{tufRoleAnnotation: name}})
-		}
+		layers = annotatedMetaLayers(tufMetadata.Root)
 	case metadata.SNAPSHOT:
-		for name, data := range tufMetadata.Snapshot {
-			*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(data, tufMetadataMediaType), Annotations: map[string]string{tufRoleAnnotation: name}})
-		}
+		layers = annotatedMetaLayers(tufMetadata.Snapshot)
 	case metadata.TARGETS:
-		for name, data := range tufMetadata.Targets {
-			*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(data, tufMetadataMediaType), Annotations: map[string]string{tufRoleAnnotation: name}})
-		}
+		layers = annotatedMetaLayers(tufMetadata.Targets)
 	case metadata.TIMESTAMP:
-		*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(tufMetadata.Timestamp, tufMetadataMediaType), Annotations: map[string]string{tufRoleAnnotation: string(role)}})
+		ann[tufRoleAnnotation] = fmt.Sprintf("%s.json", role)
+		*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(tufMetadata.Timestamp, tufMetadataMediaType), Annotations: ann})
 	default:
 		return nil, fmt.Errorf("unsupported TUF role: %s", role)
 	}
 	return layers, nil
+}
+
+func annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addendum {
+	layers := new([]mutate.Addendum)
+	for name, data := range meta {
+		ann := map[string]string{tufRoleAnnotation: name}
+		*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(data, tufMetadataMediaType), Annotations: ann})
+	}
+	return layers
 }
 
 func PushMetadataManifest(imageName string) error {
@@ -141,7 +144,7 @@ func PushMetadataManifest(imageName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get metadata: %w", err)
 	}
-	manifest, err := BuildMetadataManifest(metadata)
+	manifest, err := buildMetadataManifest(metadata)
 	if err != nil {
 		return fmt.Errorf("failed to build metadata manifest: %w", err)
 	}
