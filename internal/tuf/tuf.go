@@ -17,6 +17,7 @@ import (
 
 type tufClient struct {
 	updater *updater.Updater
+	cfg     *config.UpdaterConfig
 }
 
 // NewTufClient creates a new TUF client
@@ -72,6 +73,7 @@ func NewTufClient(initialRoot []byte, tufPath, metadataURL, targetsURL string) (
 
 	client := &tufClient{
 		updater: up,
+		cfg:     cfg,
 	}
 	return client, nil
 
@@ -107,4 +109,8 @@ func (t *tufClient) DownloadTarget(target string) (filePath string, data []byte,
 
 func (t *tufClient) GetMetadata() trustedmetadata.TrustedMetadata {
 	return t.updater.GetTrustedMetadataSet()
+}
+
+func (t *tufClient) MaxRootLength() int64 {
+	return t.cfg.RootMaxLength
 }
