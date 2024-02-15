@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/static"
@@ -22,8 +23,8 @@ import (
 var InitialRoot []byte
 
 const (
-	defaultMetadataURL   = "https://docker.github.io/tuf-staging/metadata"
-	defaultTargetsURL    = "https://docker.github.io/tuf-staging/targets"
+	DefaultMetadataURL   = "https://docker.github.io/tuf-staging/metadata"
+	DefaultTargetsURL    = "https://docker.github.io/tuf-staging/targets"
 	tufMetadataMediaType = "application/vnd.tuf.metadata+json"
 	tufRoleAnnotation    = "tuf.io/role"
 )
@@ -39,12 +40,12 @@ type TufMetadata struct {
 	Timestamp []byte
 }
 
-func GetTufGitRepoMetadata() (*TufMetadata, error) {
+func GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, error) {
 	tufPath, err := os.UserHomeDir()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user home directory: %w", err)
 	}
-	tufClient, err := tuf.NewTufClient(InitialRoot, tufPath, defaultMetadataURL, defaultTargetsURL)
+	tufClient, err := tuf.NewTufClient(InitialRoot, tufPath, metadataURL, "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create TUF client: %w", err)
 	}
@@ -55,7 +56,7 @@ func GetTufGitRepoMetadata() (*TufMetadata, error) {
 	rootVersion := trustedMetadata.Root.Signed.Version
 	// get the previous versions of root metadata if any
 	if rootVersion != 1 {
-		rootMetadata, err = tufClient.GetPriorRoots(defaultMetadataURL)
+		rootMetadata, err = tufClient.GetPriorRoots(metadataURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get prior root metadata: %w", err)
 		}
@@ -94,7 +95,7 @@ func GetTufGitRepoMetadata() (*TufMetadata, error) {
 	}, nil
 }
 
-func buildMetadataManifest(metadata *TufMetadata) (v1.Image, error) {
+func buildMetadataManifest(metadata *TufMetadata) (*v1.Image, error) {
 	img := empty.Image
 	img = mutate.MediaType(img, types.OCIManifestSchema1)
 	img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
@@ -108,7 +109,7 @@ func buildMetadataManifest(metadata *TufMetadata) (v1.Image, error) {
 			return nil, fmt.Errorf("failed to append role layer to image: %w", err)
 		}
 	}
-	return img, nil
+	return &img, nil
 }
 
 func makeRoleLayers(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum, error) {
@@ -139,23 +140,19 @@ func annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addendum {
 	return layers
 }
 
-func PushMetadataManifest(imageName string) error {
-	metadata, err := GetTufGitRepoMetadata()
+func CreateMetadataManifest(metadataURL string) (*v1.Image, error) {
+	metadata, err := GetTufGitRepoMetadata(metadataURL)
 	if err != nil {
-		return fmt.Errorf("failed to get metadata: %w", err)
+		return nil, fmt.Errorf("failed to get metadata: %w", err)
 	}
 	manifest, err := buildMetadataManifest(metadata)
 	if err != nil {
-		return fmt.Errorf("failed to build metadata manifest: %w", err)
+		return nil, fmt.Errorf("failed to build metadata manifest: %w", err)
 	}
-	err = PushToRegistry(manifest, imageName)
-	if err != nil {
-		return fmt.Errorf("failed to push metadata manifest: %w", err)
-	}
-	return nil
+	return manifest, nil
 }
 
-func PushToRegistry(image v1.Image, imageName string) error {
+func PushToRegistry(image *v1.Image, imageName string) error {
 	// Parse the image name
 	ref, err := name.ParseReference(imageName)
 	if err != nil {
@@ -167,8 +164,26 @@ func PushToRegistry(image v1.Image, imageName string) error {
 		log.Fatalf("Failed to get authenticator: %v", err)
 	}
 	// Push the image to the registry
-	if err := remote.Write(ref, image, remote.WithAuth(auth)); err != nil {
+	if err := remote.Write(ref, *image, remote.WithAuth(auth)); err != nil {
 		return fmt.Errorf("failed to push image %s: %w", imageName, err)
+	}
+	return nil
+}
+
+func SaveAsOCILayout(image *v1.Image, path string) error {
+	// Save the image to the local filesystem
+	err := os.MkdirAll(path, os.FileMode(0744))
+	if err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+	index := empty.Index
+	l, err := layout.Write(path, index)
+	if err != nil {
+		return fmt.Errorf("failed to create index: %w", err)
+	}
+	err = l.AppendImage(*image)
+	if err != nil {
+		return fmt.Errorf("failed to append image to index: %w", err)
 	}
 	return nil
 }

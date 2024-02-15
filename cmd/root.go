@@ -8,8 +8,6 @@ import (
 )
 
 type rootOptions struct {
-	source      string
-	destination string
 }
 
 func defaultRootOptions() *rootOptions {
@@ -26,12 +24,7 @@ func newRootCmd(version string) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&o.source, "source", "s", "Source location (http://|oci://|file://)")
-	cmd.Flags().StringVar(&o.destination, "destination", "d", "Destination location (oci://|file://)")
-
-	cmd.MarkFlagRequired("source")
-	cmd.MarkFlagRequired("destination")
-
+	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand
 	cmd.AddCommand(newVersionCmd(version)) // version subcommand
 
 	return cmd
