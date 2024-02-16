@@ -7,13 +7,13 @@ import (
 	"github.com/docker/go-tuf-mirror/internal/test"
 )
 
-func TestGetTufGitRepoMetadata(t *testing.T) {
+func TestGetTufMetadataMirror(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
 	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tufMetadata, err := m.GetTufGitRepoMetadata(DefaultMetadataURL)
+	tufMetadata, err := m.getTufMetadataMirror(DefaultMetadataURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,5 +65,20 @@ func TestCreateMetadataManifest(t *testing.T) {
 		if !ok {
 			t.Fatalf("missing annotations")
 		}
+	}
+}
+
+func TestGetTufTargetsMirror(t *testing.T) {
+	path := test.CreateTempDir(t, "tuf_temp")
+	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	targets, err := m.GetTufTargetMirrors()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(targets) == 0 {
+		t.Error("Expected non-empty targets")
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/docker/go-tuf-mirror/internal/tuf"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -26,18 +27,25 @@ const (
 	DefaultMetadataURL   = "https://docker.github.io/tuf-staging/metadata"
 	DefaultTargetsURL    = "https://docker.github.io/tuf-staging/targets"
 	tufMetadataMediaType = "application/vnd.tuf.metadata+json"
+	tufTargetMediaType   = "application/vnd.tuf.target"
 	tufRoleAnnotation    = "tuf.io/role"
+	tufTargetAnnotation  = "tuf.io/target"
 )
 
 type TufRole string
 
 var TufRoles = []TufRole{metadata.ROOT, metadata.SNAPSHOT, metadata.TARGETS, metadata.TIMESTAMP}
 
-type TufMetadata struct {
+type TufMetadataMirror struct {
 	Root      map[string][]byte
 	Snapshot  map[string][]byte
 	Targets   map[string][]byte
 	Timestamp []byte
+}
+
+type TufTargetMirror struct {
+	Image *v1.Image
+	Tag   string
 }
 
 type TufMirror struct {
@@ -55,7 +63,7 @@ func NewTufMirror(tufPath string, metadataURL string, targetsURL string) (*TufMi
 	return &TufMirror{tufClient: tufClient, tufPath: tufPath, metadataURL: metadataURL, targetsURL: targetsURL}, nil
 }
 
-func (m *TufMirror) GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, error) {
+func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadataMirror, error) {
 	trustedMetadata := m.tufClient.GetMetadata()
 
 	rootMetadata := map[string][]byte{}
@@ -94,7 +102,7 @@ func (m *TufMirror) GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, err
 		snapshotName = fmt.Sprintf("%d.snapshot.json", trustedMetadata.Snapshot.Signed.Version)
 		targetsName = fmt.Sprintf("%d.targets.json", trustedMetadata.Targets[metadata.TARGETS].Signed.Version)
 	}
-	return &TufMetadata{
+	return &TufMetadataMirror{
 		Root:      rootMetadata,
 		Snapshot:  map[string][]byte{snapshotName: snapshotBytes},
 		Targets:   map[string][]byte{targetsName: targetsBytes},
@@ -102,11 +110,35 @@ func (m *TufMirror) GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, err
 	}, nil
 }
 
-func (m *TufMirror) GetTufGitRepoTargets(targetsURL string) (map[string][]byte, error) {
-	return map[string][]byte{"targets.json": []byte{}}, nil
+func (m *TufMirror) GetTufTargetMirrors() ([]*TufTargetMirror, error) {
+	targetMirrors := []*TufTargetMirror{}
+	md := m.tufClient.GetMetadata()
+	targets := md.Targets[metadata.TARGETS].Signed.Targets
+	for _, t := range targets {
+		_, data, err := m.tufClient.DownloadTarget(t.Path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to download target %s: %w", t.Path, err)
+		}
+		img := empty.Image
+		img = mutate.MediaType(img, types.OCIManifestSchema1)
+		img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
+		ann := map[string]string{tufTargetAnnotation: t.Path}
+		layer := mutate.Addendum{Layer: static.NewLayer(data, tufTargetMediaType), Annotations: ann}
+		img, err = mutate.Append(img, layer)
+		if err != nil {
+			return nil, fmt.Errorf("failed to append role layer to image: %w", err)
+		}
+		hash, ok := t.Hashes["sha256"]
+		if !ok {
+			return nil, fmt.Errorf("missing sha256 hash for target %s", t.Path)
+		}
+		name := strings.Join([]string{hash.String(), t.Path}, ".")
+		targetMirrors = append(targetMirrors, &TufTargetMirror{Image: &img, Tag: name})
+	}
+	return targetMirrors, nil
 }
 
-func (m *TufMirror) buildMetadataManifest(metadata *TufMetadata) (*v1.Image, error) {
+func (m *TufMirror) buildMetadataManifest(metadata *TufMetadataMirror) (*v1.Image, error) {
 	img := empty.Image
 	img = mutate.MediaType(img, types.OCIManifestSchema1)
 	img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
@@ -123,7 +155,7 @@ func (m *TufMirror) buildMetadataManifest(metadata *TufMetadata) (*v1.Image, err
 	return &img, nil
 }
 
-func (m *TufMirror) makeRoleLayers(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum, error) {
+func (m *TufMirror) makeRoleLayers(role TufRole, tufMetadata *TufMetadataMirror) (*[]mutate.Addendum, error) {
 	layers := new([]mutate.Addendum)
 	ann := map[string]string{tufRoleAnnotation: ""}
 	switch role {
@@ -152,7 +184,7 @@ func (m *TufMirror) annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addend
 }
 
 func (m *TufMirror) CreateMetadataManifest(metadataURL string) (*v1.Image, error) {
-	metadata, err := m.GetTufGitRepoMetadata(metadataURL)
+	metadata, err := m.getTufMetadataMirror(metadataURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get metadata: %w", err)
 	}

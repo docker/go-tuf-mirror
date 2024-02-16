@@ -27,6 +27,7 @@ func newRootCmd(version string) *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&o.tufPath, "tuf-path", "t", "", "path on filesystem for tuf root")
 
 	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand
+	cmd.AddCommand(newTargetsCmd(o))       // targets subcommand
 	cmd.AddCommand(newVersionCmd(version)) // version subcommand
 
 	return cmd
