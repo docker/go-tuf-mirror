@@ -4,11 +4,13 @@ import (
 	_ "embed"
 	"fmt"
 
+	"github.com/docker/go-tuf-mirror/pkg/mirror"
 	"github.com/spf13/cobra"
 )
 
 type rootOptions struct {
 	tufPath string
+	mirror  *mirror.TufMirror
 }
 
 func defaultRootOptions() *rootOptions {
@@ -29,6 +31,7 @@ func newRootCmd(version string) *cobra.Command {
 	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand
 	cmd.AddCommand(newTargetsCmd(o))       // targets subcommand
 	cmd.AddCommand(newVersionCmd(version)) // version subcommand
+	cmd.AddCommand(newAllCmd(o))           // all subcommand
 
 	return cmd
 }

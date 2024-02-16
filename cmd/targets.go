@@ -72,27 +72,33 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("destination registry should not specify tag: %s", o.destination)
 	}
 
-	var tufPath string
-	if o.rootOptions.tufPath == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("failed to get user home directory: %w", err)
-		}
-		tufPath = filepath.Join(home, ".docker", "tuf")
-	} else {
-		tufPath = strings.TrimSpace(o.rootOptions.tufPath)
-	}
-
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF targets %s to %s\n", o.source, o.destination)
-	m, err := mirror.NewTufMirror(tufPath, o.metadata, o.source)
-	if err != nil {
-		return fmt.Errorf("failed to create TUF mirror: %w", err)
+
+	m := o.rootOptions.mirror
+	if m == nil {
+		var tufPath string
+		var err error
+		if o.rootOptions.tufPath == "" {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return fmt.Errorf("failed to get user home directory: %w", err)
+			}
+			tufPath = filepath.Join(home, ".docker", "tuf")
+		} else {
+			tufPath = strings.TrimSpace(o.rootOptions.tufPath)
+		}
+		m, err = mirror.NewTufMirror(tufPath, o.metadata, o.source)
+		if err != nil {
+			return fmt.Errorf("failed to create TUF mirror: %w", err)
+		}
+	} else {
+		m.TufClient.SetRemoteTargetsURL(o.source)
 	}
 
 	// create target manifests
 	targets, err := m.GetTufTargetMirrors()
 	if err != nil {
-		return fmt.Errorf("failed to create metadata manifest: %w", err)
+		return fmt.Errorf("failed to create target mirrors: %w", err)
 	}
 
 	// save target manifests

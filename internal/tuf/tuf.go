@@ -84,31 +84,30 @@ func NewTufClient(initialRoot []byte, tufPath, metadataURL, targetsURL string) (
 // DownloadTarget downloads the target file using Updater. The Updater gets the target
 // information, verifies if the target is already cached, and if it is not cached,
 // downloads the target file.
-func (t *TufClient) DownloadTarget(target string) (filePath string, data []byte, err error) {
+func (t *TufClient) DownloadTarget(target string, filePath string) (actualFilePath string, data []byte, err error) {
 	// search if the desired target is available
 	targetInfo, err := t.updater.GetTargetInfo(target)
 	if err != nil {
-		return "", nil, fmt.Errorf("target %s not found: %w", target, err)
+		return "", nil, err
 	}
 
 	// target is available, so let's see if the target is already present locally
-	filePath, data, err = t.updater.FindCachedTarget(targetInfo, "")
+	actualFilePath, data, err = t.updater.FindCachedTarget(targetInfo, filePath)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed while finding a cached target: %w", err)
 	}
 	if data != nil {
-		return filePath, data, err
+		return actualFilePath, data, err
 	}
 
 	// target is not present locally, so let's try to download it
-	filePath, data, err = t.updater.DownloadTarget(targetInfo, "", "")
+	actualFilePath, data, err = t.updater.DownloadTarget(targetInfo, filePath, "")
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to download target file %s - %w", target, err)
 	}
 
-	return filePath, data, err
+	return actualFilePath, data, err
 }
-
 func (t *TufClient) GetMetadata() trustedmetadata.TrustedMetadata {
 	return t.updater.GetTrustedMetadataSet()
 }
@@ -129,4 +128,8 @@ func (t *TufClient) GetPriorRoots(metadataURL string) (map[string][]byte, error)
 		rootMetadata[fmt.Sprintf("%d.root.json", i)] = meta
 	}
 	return rootMetadata, nil
+}
+
+func (t *TufClient) SetRemoteTargetsURL(url string) {
+	t.cfg.RemoteTargetsURL = url
 }

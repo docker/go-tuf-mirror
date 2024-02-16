@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/go-tuf-mirror/internal/tuf"
@@ -49,7 +50,7 @@ type TufTargetMirror struct {
 }
 
 type TufMirror struct {
-	tufClient   *tuf.TufClient
+	TufClient   *tuf.TufClient
 	tufPath     string
 	metadataURL string
 	targetsURL  string
@@ -60,18 +61,18 @@ func NewTufMirror(tufPath string, metadataURL string, targetsURL string) (*TufMi
 	if err != nil {
 		return nil, fmt.Errorf("failed to create TUF client: %w", err)
 	}
-	return &TufMirror{tufClient: tufClient, tufPath: tufPath, metadataURL: metadataURL, targetsURL: targetsURL}, nil
+	return &TufMirror{TufClient: tufClient, tufPath: tufPath, metadataURL: metadataURL, targetsURL: targetsURL}, nil
 }
 
 func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadataMirror, error) {
-	trustedMetadata := m.tufClient.GetMetadata()
+	trustedMetadata := m.TufClient.GetMetadata()
 
 	rootMetadata := map[string][]byte{}
 	rootVersion := trustedMetadata.Root.Signed.Version
 	// get the previous versions of root metadata if any
 	if rootVersion != 1 {
 		var err error
-		rootMetadata, err = m.tufClient.GetPriorRoots(metadataURL)
+		rootMetadata, err = m.TufClient.GetPriorRoots(metadataURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get prior root metadata: %w", err)
 		}
@@ -112,10 +113,10 @@ func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadataMirror
 
 func (m *TufMirror) GetTufTargetMirrors() ([]*TufTargetMirror, error) {
 	targetMirrors := []*TufTargetMirror{}
-	md := m.tufClient.GetMetadata()
+	md := m.TufClient.GetMetadata()
 	targets := md.Targets[metadata.TARGETS].Signed.Targets
 	for _, t := range targets {
-		_, data, err := m.tufClient.DownloadTarget(t.Path)
+		_, data, err := m.TufClient.DownloadTarget(t.Path, filepath.Join(m.tufPath, "download"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to download target %s: %w", t.Path, err)
 		}
