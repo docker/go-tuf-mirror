@@ -66,7 +66,6 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create metadata manifest: %w", err)
 	}
-	fmt.Fprint(cmd.OutOrStdout(), "Metadata manifest created\n")
 
 	// save metadata manifest
 	switch {
