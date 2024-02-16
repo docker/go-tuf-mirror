@@ -3,10 +3,17 @@ package mirror
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/docker/go-tuf-mirror/internal/test"
 )
 
 func TestGetTufGitRepoMetadata(t *testing.T) {
-	tufMetadata, err := GetTufGitRepoMetadata(DefaultMetadataURL)
+	path := test.CreateTempDir(t, "tuf_temp")
+	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tufMetadata, err := m.GetTufGitRepoMetadata(DefaultMetadataURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +32,12 @@ func TestGetTufGitRepoMetadata(t *testing.T) {
 }
 
 func TestCreateMetadataManifest(t *testing.T) {
-	img, err := CreateMetadataManifest(DefaultMetadataURL)
+	path := test.CreateTempDir(t, "tuf_temp")
+	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, err := m.CreateMetadataManifest(DefaultMetadataURL)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -40,23 +40,30 @@ type TufMetadata struct {
 	Timestamp []byte
 }
 
-func GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, error) {
-	tufPath, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user home directory: %w", err)
-	}
-	tufClient, err := tuf.NewTufClient(InitialRoot, tufPath, metadataURL, "")
+type TufMirror struct {
+	tufClient   *tuf.TufClient
+	tufPath     string
+	metadataURL string
+	targetsURL  string
+}
+
+func NewTufMirror(tufPath string, metadataURL string, targetsURL string) (*TufMirror, error) {
+	tufClient, err := tuf.NewTufClient(InitialRoot, tufPath, metadataURL, targetsURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create TUF client: %w", err)
 	}
+	return &TufMirror{tufClient: tufClient, tufPath: tufPath, metadataURL: metadataURL, targetsURL: targetsURL}, nil
+}
 
-	trustedMetadata := tufClient.GetMetadata()
+func (m *TufMirror) GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, error) {
+	trustedMetadata := m.tufClient.GetMetadata()
 
 	rootMetadata := map[string][]byte{}
 	rootVersion := trustedMetadata.Root.Signed.Version
 	// get the previous versions of root metadata if any
 	if rootVersion != 1 {
-		rootMetadata, err = tufClient.GetPriorRoots(metadataURL)
+		var err error
+		rootMetadata, err = m.tufClient.GetPriorRoots(metadataURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get prior root metadata: %w", err)
 		}
@@ -95,12 +102,16 @@ func GetTufGitRepoMetadata(metadataURL string) (*TufMetadata, error) {
 	}, nil
 }
 
-func buildMetadataManifest(metadata *TufMetadata) (*v1.Image, error) {
+func (m *TufMirror) GetTufGitRepoTargets(targetsURL string) (map[string][]byte, error) {
+	return map[string][]byte{"targets.json": []byte{}}, nil
+}
+
+func (m *TufMirror) buildMetadataManifest(metadata *TufMetadata) (*v1.Image, error) {
 	img := empty.Image
 	img = mutate.MediaType(img, types.OCIManifestSchema1)
 	img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
 	for _, role := range TufRoles {
-		layers, err := makeRoleLayers(role, metadata)
+		layers, err := m.makeRoleLayers(role, metadata)
 		if err != nil {
 			return nil, fmt.Errorf("failed to make role layer: %w", err)
 		}
@@ -112,16 +123,16 @@ func buildMetadataManifest(metadata *TufMetadata) (*v1.Image, error) {
 	return &img, nil
 }
 
-func makeRoleLayers(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum, error) {
+func (m *TufMirror) makeRoleLayers(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum, error) {
 	layers := new([]mutate.Addendum)
 	ann := map[string]string{tufRoleAnnotation: ""}
 	switch role {
 	case metadata.ROOT:
-		layers = annotatedMetaLayers(tufMetadata.Root)
+		layers = m.annotatedMetaLayers(tufMetadata.Root)
 	case metadata.SNAPSHOT:
-		layers = annotatedMetaLayers(tufMetadata.Snapshot)
+		layers = m.annotatedMetaLayers(tufMetadata.Snapshot)
 	case metadata.TARGETS:
-		layers = annotatedMetaLayers(tufMetadata.Targets)
+		layers = m.annotatedMetaLayers(tufMetadata.Targets)
 	case metadata.TIMESTAMP:
 		ann[tufRoleAnnotation] = fmt.Sprintf("%s.json", role)
 		*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(tufMetadata.Timestamp, tufMetadataMediaType), Annotations: ann})
@@ -131,7 +142,7 @@ func makeRoleLayers(role TufRole, tufMetadata *TufMetadata) (*[]mutate.Addendum,
 	return layers, nil
 }
 
-func annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addendum {
+func (m *TufMirror) annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addendum {
 	layers := new([]mutate.Addendum)
 	for name, data := range meta {
 		ann := map[string]string{tufRoleAnnotation: name}
@@ -140,12 +151,12 @@ func annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addendum {
 	return layers
 }
 
-func CreateMetadataManifest(metadataURL string) (*v1.Image, error) {
-	metadata, err := GetTufGitRepoMetadata(metadataURL)
+func (m *TufMirror) CreateMetadataManifest(metadataURL string) (*v1.Image, error) {
+	metadata, err := m.GetTufGitRepoMetadata(metadataURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get metadata: %w", err)
 	}
-	manifest, err := buildMetadataManifest(metadata)
+	manifest, err := m.buildMetadataManifest(metadata)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build metadata manifest: %w", err)
 	}

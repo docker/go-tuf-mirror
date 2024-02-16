@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/go-tuf-mirror/internal/util"
@@ -47,7 +49,6 @@ func newMetadataCmd(opts *rootOptions) *cobra.Command {
 }
 
 func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
-
 	// only support web to registry or oci layout for now
 	if !strings.HasPrefix(o.source, types.WebPrefix) {
 		return fmt.Errorf("source not implemented: %s", o.source)
@@ -58,11 +59,25 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	if !util.IsValidUrl(o.source) {
 		return fmt.Errorf("invalid source url: %s", o.source)
 	}
+	var tufPath string
+	if o.rootOptions.tufPath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("failed to get user home directory: %w", err)
+		}
+		tufPath = filepath.Join(home, ".docker", "tuf")
+	} else {
+		tufPath = strings.TrimSpace(o.rootOptions.tufPath)
+	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
+	m, err := mirror.NewTufMirror(tufPath, o.source, "")
+	if err != nil {
+		return fmt.Errorf("failed to create TUF mirror: %w", err)
+	}
 
 	// create metadata manifest
-	manifest, err := mirror.CreateMetadataManifest(o.source)
+	manifest, err := m.CreateMetadataManifest(o.source)
 	if err != nil {
 		return fmt.Errorf("failed to create metadata manifest: %w", err)
 	}

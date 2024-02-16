@@ -8,6 +8,7 @@ import (
 )
 
 type rootOptions struct {
+	tufPath string
 }
 
 func defaultRootOptions() *rootOptions {
@@ -23,6 +24,7 @@ func newRootCmd(version string) *cobra.Command {
 			return cmd.Help()
 		},
 	}
+	cmd.PersistentFlags().StringVarP(&o.tufPath, "tuf-path", "t", "", "path on filesystem for tuf root")
 
 	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand
 	cmd.AddCommand(newVersionCmd(version)) // version subcommand

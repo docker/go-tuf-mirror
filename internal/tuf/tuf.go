@@ -17,13 +17,13 @@ import (
 	"github.com/theupdateframework/go-tuf/v2/metadata/updater"
 )
 
-type tufClient struct {
+type TufClient struct {
 	updater *updater.Updater
 	cfg     *config.UpdaterConfig
 }
 
 // NewTufClient creates a new TUF client
-func NewTufClient(initialRoot []byte, tufPath, metadataURL, targetsURL string) (*tufClient, error) {
+func NewTufClient(initialRoot []byte, tufPath, metadataURL, targetsURL string) (*TufClient, error) {
 	tufRootDigest := util.HexHashBytes(initialRoot)
 
 	// create a docker folder for storing tuf stuff
@@ -73,7 +73,7 @@ func NewTufClient(initialRoot []byte, tufPath, metadataURL, targetsURL string) (
 		return nil, fmt.Errorf("failed to refresh trusted metadata: %w", err)
 	}
 
-	client := &tufClient{
+	client := &TufClient{
 		updater: up,
 		cfg:     cfg,
 	}
@@ -84,7 +84,7 @@ func NewTufClient(initialRoot []byte, tufPath, metadataURL, targetsURL string) (
 // DownloadTarget downloads the target file using Updater. The Updater gets the target
 // information, verifies if the target is already cached, and if it is not cached,
 // downloads the target file.
-func (t *tufClient) DownloadTarget(target string) (filePath string, data []byte, err error) {
+func (t *TufClient) DownloadTarget(target string) (filePath string, data []byte, err error) {
 	// search if the desired target is available
 	targetInfo, err := t.updater.GetTargetInfo(target)
 	if err != nil {
@@ -109,15 +109,15 @@ func (t *tufClient) DownloadTarget(target string) (filePath string, data []byte,
 	return filePath, data, err
 }
 
-func (t *tufClient) GetMetadata() trustedmetadata.TrustedMetadata {
+func (t *TufClient) GetMetadata() trustedmetadata.TrustedMetadata {
 	return t.updater.GetTrustedMetadataSet()
 }
 
-func (t *tufClient) MaxRootLength() int64 {
+func (t *TufClient) MaxRootLength() int64 {
 	return t.cfg.RootMaxLength
 }
 
-func (t *tufClient) GetPriorRoots(metadataURL string) (map[string][]byte, error) {
+func (t *TufClient) GetPriorRoots(metadataURL string) (map[string][]byte, error) {
 	rootMetadata := map[string][]byte{}
 	trustedMetadata := t.GetMetadata()
 	client := fetcher.DefaultFetcher{}
