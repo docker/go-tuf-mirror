@@ -75,6 +75,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}
+	// set mirror in root options for reuse in targets
 	o.rootOptions.mirror = m
 
 	// create metadata manifest

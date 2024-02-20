@@ -74,6 +74,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF targets %s to %s\n", o.source, o.destination)
 
+	// use existing mirror from root or create new one
 	m := o.rootOptions.mirror
 	if m == nil {
 		var tufPath string
@@ -92,6 +93,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}
 	} else {
+		// set remote targets url for existing mirror
 		m.TufClient.SetRemoteTargetsURL(o.source)
 	}
 
