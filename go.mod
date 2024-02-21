@@ -3,7 +3,7 @@ module github.com/docker/go-tuf-mirror
 go 1.21.5
 
 require (
-	github.com/google/go-containerregistry v0.17.0
+	github.com/google/go-containerregistry v0.19.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/theupdateframework/go-tuf/v2 v2.0.0-20240212235721-171b2e4214de
