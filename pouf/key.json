@@ -1,0 +1,41 @@
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "comment": "this tuf key's digest is the keyid",
+    "artifactType": "application/vnd.tuf.key",
+    "config": {
+        "mediaType": "application/vnd.oci.empty.v1+json",
+        "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "size": 2
+    },
+    "layers": [
+        {
+            "mediaType": "application/vnd.tuf.key",
+            "digest": "sha256:a258d248fda94c63753607f7c4494ee0fcbe92f1a76bfdac795c9d84101eb311",
+            "size": 1234,
+            "comment": "Example 1: use layer contents. obviously this should be base64 encoded version of what's available at the digest above",
+            "data": {
+                "keytype": "ecdsa",
+                "keyval": {
+                    "public": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZkCwQAwNDJYctm2t2LbiO49HxECx\ndo1gavpaT0C5qWrY6jDYNDJi/fmWh3JlsZIsbQXurnkujrPXX3/202cGyQ==\n-----END PUBLIC KEY-----\n"
+                },
+                "scheme": "ecdsa-sha2-nistp256"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.empty.v1+json",
+            "artifactType": "application/vnd.tuf.key",
+            "comment": "Example 2: empty layer with annoations",
+            "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+            "size": 2,
+            "annotations": {
+                "keytype": "ecdsa",
+                "comment": "Value would need to be a string...",
+                "keyval": {
+                    "public": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZkCwQAwNDJYctm2t2LbiO49HxECx\ndo1gavpaT0C5qWrY6jDYNDJi/fmWh3JlsZIsbQXurnkujrPXX3/202cGyQ==\n-----END PUBLIC KEY-----\n"
+                },
+                "scheme": "ecdsa-sha2-nistp256",
+            }
+        }
+    ]
+}

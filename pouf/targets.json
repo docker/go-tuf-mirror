@@ -1,0 +1,42 @@
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "artifactType": "vnd.tuf/targets",
+    "comment": "This is equivalent to a TUF targets.json file. Signatures are held in targets-signatures.json",
+    "annotations": {
+        "vnd.tuf.target/expires": "2025-01-25T17:48:36Z",
+        "vnd.tuf.target/spec_version": "1.0.31",
+        "vnd.tuf.target/version": 7,
+        "vnd.tuf.target/x-tuf-on-ci-expiry-period": 365,
+        "vnd.tuf.target/x-tuf-on-ci-signing-period": 60
+    },
+    "comment.": "Can basically be any OCI artifact that is allowed in an index",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "size": 668,
+            "digest": "sha256:cb62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552b",
+            "annotations": {
+                "vnd.tuf.target/name": "docker.io/library/foobar:latest"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "artifactType": "vnd.tuf/delegations",
+            "size": 668,
+            "comment": "This is the OCI digest of delegations (see delegations.json)",
+            "digest": "sha256:db62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552c"
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactType": "vnd.tuf/base64-string",
+            "size": 668,
+            "digest": "sha256:ab62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552c",
+            "annotations": {
+                "vnd.tuf.target/name": "docker.io/library/tuf_metadata:keypem"
+            },
+            "comment": "As per spec, we can put the contents here too for ease of access",
+            "data": "LS0tLS1CRUdJTiBFTkNPREVYIEtFWS0tLS0tCk1JSUJXRENDQWJl"
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "comment": "This holds the signatures for the targets, referencing them by digest",
+    "artifactType": "vnd.tuf/target-signatures",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "artifactType": "vnd.tuf/targets",
+            "size": 668,
+            "comment": "This is the OCI digest of targets (see targets.json)",
+            "digest": "sha256:cb62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552b"
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactType": "vnd.tuf/signature+v1",
+            "size": 668,
+            "comment": "Example 1: Althogh this image must exist, it is the empty image (see empty.json)",
+            "digest": "sha256:97bce9f1b58a0da44861de469e3e5b655d35d6a7eb19eae4f1880fc90c44de7b",
+            "annotations": {
+                "vnd.tuf/target-digest": "sha256:cb62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552b",
+                "vnd.tuf/keyid": "e642e70171046d6d97efdea76792c373d863c55c054c4287c999c62c60111120f",
+                "vnd.tuf/sig": "3045022078e3352bebfc99c0c67c5d337381746bd23bf06a79025f742781df0ac0e71e4022100e764525314025ae6a68719069884bf4cc3fd6b5c636e45a4733f02afb9f55cb7"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactType": "application/vnd.tuf.signature+v2",
+            "size": 668,
+            "digest": "sha256:87bce9f1b58a0da44861de469e3e5b655d35d6a7eb19eae4f1880fc90c44de7c",
+            "comment": "Example 2: Image at digest exists and contains the same as data field below (see signature.json)",
+            "annotations": {
+                "vnd.tuf/target-digest": "sha256:cb62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552b",
+                "vnd.tuf/keyid": "e642e70171046d6d97efdea76792c373d863c55c054c4287c999c62c60111120f",
+                "vnd.tuf/sig": "3045022078e3352bebfc99c0c67c5d337381746bd23bf06a79025f742781df0ac0e71e4022100e764525314025ae6a68719069884bf4cc3fd6b5c636e45a4733f02afb9f55cb7"
+            },
+            "data": "awoia2V5aWQiOiAiZTY0MmU3MDE3MTA0NmQ2ZDk3ZWZkZWE3Njc5MmMzNzNkODYzYzU1YzA1NGM0Mjg3Yzk5OWM2MmM2MDExMTIwZiIsCiJzaWciOiAiMzA0NTAyMjA3OGUzMzUyYmViZmNlOTljMGM2N2M1ZDMzNzM4MTc0NmJkMjNiZjA2YTc5MDI1Zjc0Mjc4MWRmMGFjMGU3MWU0MDIyMTAwZTc2NDUyNTMxNDAyNWFlNmE2ODcxOTA2OTg4NGJmNGNjM2ZkNmI1YzYzNmU0NWE0NzMzZjAyYWZiOWY1NWNiNyIKgQ=="
+        }
+    ]
+}

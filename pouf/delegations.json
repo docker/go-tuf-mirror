@@ -1,0 +1,22 @@
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "artifactType": "vnd.tuf/delegations",
+    "comment": "This contains targets delegations that would normally be held in targets.json in TUF",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "artifactType": "vnd.tuf/key",
+            "size": 668,
+            "comment": "vnd.tuf/key is JSON that matches the TUF key spec (see key.json)",
+            "digest": "sha256:da62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb2234453552d"
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactType": "vnd.tuf/roles",
+            "size": 668,
+            "digest": "sha256:ba62ae88f4cbac09978182bfd713f0732da8d2a1be09175d9cdeb22344535545",
+            "data": "LS0tLS1CRUdJTiBFTkNPREVYIEtFWS0tLS0tCk1JSUJXRENDQWJl"
+        }
+    ]
+}
