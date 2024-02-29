@@ -29,8 +29,7 @@ const (
 	DefaultTargetsURL    = "https://docker.github.io/tuf-staging/targets"
 	tufMetadataMediaType = "application/vnd.tuf.metadata+json"
 	tufTargetMediaType   = "application/vnd.tuf.target"
-	tufRoleAnnotation    = "tuf.io/role"
-	tufTargetAnnotation  = "tuf.io/target"
+	tufFileAnnotation    = "tuf.io/filename"
 )
 
 type TufRole string
@@ -123,17 +122,17 @@ func (m *TufMirror) GetTufTargetMirrors() ([]*TufTargetMirror, error) {
 		img := empty.Image
 		img = mutate.MediaType(img, types.OCIManifestSchema1)
 		img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
-		ann := map[string]string{tufTargetAnnotation: t.Path}
-		layer := mutate.Addendum{Layer: static.NewLayer(data, tufTargetMediaType), Annotations: ann}
-		img, err = mutate.Append(img, layer)
-		if err != nil {
-			return nil, fmt.Errorf("failed to append role layer to image: %w", err)
-		}
 		hash, ok := t.Hashes["sha256"]
 		if !ok {
 			return nil, fmt.Errorf("missing sha256 hash for target %s", t.Path)
 		}
 		name := strings.Join([]string{hash.String(), t.Path}, ".")
+		ann := map[string]string{tufFileAnnotation: name}
+		layer := mutate.Addendum{Layer: static.NewLayer(data, tufTargetMediaType), Annotations: ann}
+		img, err = mutate.Append(img, layer)
+		if err != nil {
+			return nil, fmt.Errorf("failed to append role layer to image: %w", err)
+		}
 		targetMirrors = append(targetMirrors, &TufTargetMirror{Image: &img, Tag: name})
 	}
 	return targetMirrors, nil
@@ -158,7 +157,7 @@ func (m *TufMirror) buildMetadataManifest(metadata *TufMetadataMirror) (*v1.Imag
 
 func (m *TufMirror) makeRoleLayers(role TufRole, tufMetadata *TufMetadataMirror) (*[]mutate.Addendum, error) {
 	layers := new([]mutate.Addendum)
-	ann := map[string]string{tufRoleAnnotation: ""}
+	ann := map[string]string{tufFileAnnotation: ""}
 	switch role {
 	case metadata.ROOT:
 		layers = m.annotatedMetaLayers(tufMetadata.Root)
@@ -167,7 +166,7 @@ func (m *TufMirror) makeRoleLayers(role TufRole, tufMetadata *TufMetadataMirror)
 	case metadata.TARGETS:
 		layers = m.annotatedMetaLayers(tufMetadata.Targets)
 	case metadata.TIMESTAMP:
-		ann[tufRoleAnnotation] = fmt.Sprintf("%s.json", role)
+		ann[tufFileAnnotation] = fmt.Sprintf("%s.json", role)
 		*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(tufMetadata.Timestamp, tufMetadataMediaType), Annotations: ann})
 	default:
 		return nil, fmt.Errorf("unsupported TUF role: %s", role)
@@ -178,7 +177,7 @@ func (m *TufMirror) makeRoleLayers(role TufRole, tufMetadata *TufMetadataMirror)
 func (m *TufMirror) annotatedMetaLayers(meta map[string][]byte) *[]mutate.Addendum {
 	layers := new([]mutate.Addendum)
 	for name, data := range meta {
-		ann := map[string]string{tufRoleAnnotation: name}
+		ann := map[string]string{tufFileAnnotation: name}
 		*layers = append(*layers, mutate.Addendum{Layer: static.NewLayer(data, tufMetadataMediaType), Annotations: ann})
 	}
 	return layers

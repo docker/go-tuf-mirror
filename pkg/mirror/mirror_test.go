@@ -61,7 +61,7 @@ func TestCreateMetadataManifest(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, layer := range l.Layers {
-		_, ok := layer.Annotations[tufRoleAnnotation]
+		_, ok := layer.Annotations[tufFileAnnotation]
 		if !ok {
 			t.Fatalf("missing annotations")
 		}
