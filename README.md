@@ -1,10 +1,8 @@
 # go-tuf-mirror
 
-<div align="left">
 Mirror TUF metadata to/between OCI registries
-<br>
 
-<br>
+<div align="left">
 <img src="https://github.com/docker/go-tuf-mirror/actions/workflows/test.yml/badge.svg" alt="drawing"/>
 </div>
 
