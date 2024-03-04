@@ -1,0 +1,28 @@
+name: Mirror TUF targets
+description: Used to mirror TUF targets from a source to a destination
+inputs:
+  metadata:
+    description: source metadata location
+    default: https://docker.github.io/tuf-staging/metadata
+    required: true
+  source:
+    description: source targets location
+    default: https://docker.github.io/tuf-staging/targets
+    required: true
+  destination:
+    description: destination targets location
+    required: true
+    default: docker://docker/tuf-targets
+runs:
+  using: docker
+  image: docker://docker/go-tuf-mirror@sha256:84b13371685bfe3725189370de9bdc7b9e0e6106d0f94bbbae6f687b8afaac22 # v0.1.0
+  args:
+    - targets
+    - --metadata
+    - ${{ inputs.metadata }}
+    - --source
+    - ${{ inputs.source }}
+    - --destination
+    - ${{ inputs.destination }}
+  env:
+    DOCKER_CONFIG: /github/workspace/.docker

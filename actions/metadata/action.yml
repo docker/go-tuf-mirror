@@ -1,0 +1,22 @@
+name: Mirror TUF metadata
+description: Used to mirror TUF metadata from a source to a destination
+inputs:
+  source:
+    description: source metadata location
+    default: https://docker.github.io/tuf-staging/metadata
+    required: true
+  destination:
+    description: destination metadata location
+    required: true
+    default: docker://docker/tuf-metadata:latest
+runs:
+  using: docker
+  image: docker://docker/go-tuf-mirror@sha256:84b13371685bfe3725189370de9bdc7b9e0e6106d0f94bbbae6f687b8afaac22 # v0.1.0
+  args:
+    - metadata
+    - --source
+    - ${{ inputs.source }}
+    - --destination
+    - ${{ inputs.destination }}
+  env:
+    DOCKER_CONFIG: /github/workspace/.docker
