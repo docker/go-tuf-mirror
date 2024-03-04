@@ -29,7 +29,6 @@ Mirror TUF metadata to/between OCI registries
    ./go-tuf-mirror metadata -s https://docker.github.io/tuf-staging/metadata -d docker://docker/tuf-metadata:latest
 
    Mirroring TUF metadata https://docker.github.io/tuf-staging/metadata to docker://docker/tuf-metadata:latest
-
    Metadata manifest pushed to docker/tuf-metadata:latest
    ```
 
@@ -42,7 +41,7 @@ Mirror TUF metadata to/between OCI registries
 1. Run `metadata` command
 
    ```sh
-   ./go-tuf-mirror targets -m <source metadata location> -s <source targets     location>  -d <destination targets location>
+   ./go-tuf-mirror targets -m <source metadata location> -s <source targets location>  -d <destination targets location>
    ```
 
    example:
@@ -51,8 +50,7 @@ Mirror TUF metadata to/between OCI registries
    # output targets to docker registry
    ./go-tuf-mirror targets -m https://docker.github.io/tuf-staging/metadata -s https://docker.github.io/tuf-staging/targets  -d docker://docker/tuf-targets
 
-   Mirroring TUF targets https://docker.github.io/tuf-staging/targets to     docker://docker/tuf-targets
-
+   Mirroring TUF targets https://docker.github.io/tuf-staging/targets to docker://docker/tuf-targets
    Target manifest pushed to docker/tuf-targets:ecc736303caf8cf22ef00df2db3c411a563030c2e1e7ae24f4e38113e7ad610d.doi-signing-stage.pem
    Target manifest pushed to docker/tuf-targets:3965bb0a873cff50e16b277444d659553ab79c9632a1fb03a6d9360af536c142.image-signer-verifier.pem
    Target manifest pushed to docker/tuf-targets:e4dc114275694612ee236b231990d606b7879d05f64809611545c8234efb6cd4.doi-signing-key.pem
@@ -70,7 +68,7 @@ Mirror TUF metadata to/between OCI registries
 1. Run `all` command
 
    ```sh
-   ./go-tuf-mirror all --source-metadata <metadata location> --source-targets     <targets location> --dest-metadata <metadata output location> --dest-targets     <targets output location>
+   ./go-tuf-mirror all --source-metadata <metadata location> --source-targets <targets location> --dest-metadata <metadata output location> --dest-targets <targets output location>
    ```
 
    example:
