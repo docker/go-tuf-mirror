@@ -8,6 +8,38 @@ Mirror TUF metadata to/between OCI registries
 
 ## Usage
 
+### GitHub Actions
+
+Example GHA workflow:
+
+```yaml
+name: Run go-tuf-mirror
+on:
+  workflow_dispatch:
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CONFIG: ${{ github.workspace }}/.docker
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: dockerpublicbot
+          password: ${{ secrets.DOCKERPUBLICBOT_WRITE_PAT }}
+      - name: Mirror metadata
+        uses: docker/go-tuf-mirror/actions/metadata@v0.1.0
+        with:
+          source: https://docker.github.io/tuf-staging/metadata
+          destination: docker://docker/tuf-metadata:latest
+      - name: Mirror targets
+        uses: docker/go-tuf-mirror/actions/targets@v0.1.0
+        with:
+          metadata: https://docker.github.io/tuf-staging/metadata
+          source: https://docker.github.io/tuf-staging/targets
+          destination: docker://docker/tuf-targets
+```
+
 ### Mirror only metadata from web
 
 1. Build `go-tuf-mirror`
