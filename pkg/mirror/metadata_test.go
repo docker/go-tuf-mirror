@@ -80,3 +80,30 @@ func TestGetDelegatedMetadataMirrors(t *testing.T) {
 	assert.NotNil(t, delegations)
 	assert.Greater(t, len(delegations), 0)
 }
+
+func TestTargetDelegations(t *testing.T) {
+	path := test.CreateTempDir(t, "tuf_temp")
+	tm, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	targets, err := tm.TufClient.LoadDelegatedTargets("opkl", "targets")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Greater(t, len(targets.Signed.Targets), 0)
+}
+
+func TestCreateDelegatedTargetManifests(t *testing.T) {
+	path := test.CreateTempDir(t, "tuf_temp")
+	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	delegations, err := m.GetDelegatedMetadataMirrors()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(t, delegations)
+	assert.Greater(t, len(delegations), 0)
+}
