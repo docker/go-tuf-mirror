@@ -79,9 +79,18 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	o.rootOptions.mirror = m
 
 	// create metadata manifest
-	manifest, err := m.CreateMetadataManifest(o.source)
+	manifest, err := m.GetMetadataManifest(o.source)
 	if err != nil {
 		return fmt.Errorf("failed to create metadata manifest: %w", err)
+	}
+
+	// create delegated metadata manifests
+	var delegated []*mirror.MirrorImage
+	if o.rootOptions.full {
+		delegated, err = m.GetDelegatedMetadataMirrors()
+		if err != nil {
+			return fmt.Errorf("failed to create delegated metadata manifests: %w", err)
+		}
 	}
 
 	// save metadata manifest
@@ -93,6 +102,14 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to save metadata as OCI layout: %w", err)
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Metadata manifest layout saved to %s\n", path)
+		for _, d := range delegated {
+			path := filepath.Join(path, d.Tag)
+			err = mirror.SaveAsOCILayout(d.Image, path)
+			if err != nil {
+				return fmt.Errorf("failed to save delegated metadata as OCI layout: %w", err)
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Delegated metadata manifest layout saved to %s\n", path)
+		}
 	case strings.HasPrefix(o.destination, types.RegistryPrefix):
 		imageName := strings.TrimPrefix(o.destination, types.RegistryPrefix)
 		err = mirror.PushToRegistry(manifest, imageName)
@@ -100,6 +117,14 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to push metadata manifest: %w", err)
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Metadata manifest pushed to %s\n", imageName)
+		for _, d := range delegated {
+			imageName := fmt.Sprintf("%s:%s", imageName, d.Tag)
+			err = mirror.PushToRegistry(d.Image, imageName)
+			if err != nil {
+				return fmt.Errorf("failed to push delegated metadata manifest: %w", err)
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Delegated metadata manifest pushed to %s\n", imageName)
+		}
 	}
 	return nil
 }

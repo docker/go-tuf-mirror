@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
@@ -14,21 +15,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMetadataCmd(t *testing.T) {
-	opts := defaultRootOptions()
-	cmd := newMetadataCmd(opts)
-	if cmd == nil {
-		t.Fatal("newMetadataCmd returned nil")
-	}
+const (
+	DelegatedTargetName = "opkl" // TODO: make test metadata so that this will be less brittle with repo changes
+)
 
+func TestMetadataCmd(t *testing.T) {
 	tempDir := types.OCIPrefix + os.TempDir()
 
 	testCases := []struct {
 		name        string
 		source      string
 		destination string
+		full        bool
 	}{
-		{"git metadata to oci", mirror.DefaultMetadataURL, tempDir},
+		{"http metadata to oci", mirror.DefaultMetadataURL, tempDir, false},
+		{"http metadata with delegates to oci", mirror.DefaultMetadataURL, tempDir, true},
 	}
 
 	for _, tc := range testCases {
@@ -37,8 +38,17 @@ func TestMetadataCmd(t *testing.T) {
 				tc.source,
 				tc.destination,
 				strings.TrimPrefix(tc.destination, types.OCIPrefix))
+			if tc.full {
+				expectedOutput += fmt.Sprintf("Delegated metadata manifest layout saved to %s\n", path.Join(strings.TrimPrefix(tc.destination, types.OCIPrefix), DelegatedTargetName))
+			}
 
 			b := bytes.NewBufferString("")
+			opts := defaultRootOptions()
+			opts.full = tc.full
+			cmd := newMetadataCmd(opts)
+			if cmd == nil {
+				t.Fatal("newMetadataCmd returned nil")
+			}
 			cmd.SetOut(b)
 			_ = cmd.PersistentFlags().Set("source", tc.source)
 			_ = cmd.PersistentFlags().Set("destination", tc.destination)

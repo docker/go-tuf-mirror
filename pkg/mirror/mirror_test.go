@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/docker/go-tuf-mirror/internal/test"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTufMetadataMirror(t *testing.T) {
@@ -37,13 +38,11 @@ func TestCreateMetadataManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	img, err := m.CreateMetadataManifest(DefaultMetadataURL)
+	img, err := m.GetMetadataManifest(DefaultMetadataURL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *img == nil {
-		t.Error("Expected non-nil image")
-	}
+	assert.NotNil(t, img)
 	image := *img
 	mf, err := image.RawManifest()
 	if err != nil {
@@ -81,4 +80,31 @@ func TestGetTufTargetsMirror(t *testing.T) {
 	if len(targets) == 0 {
 		t.Error("Expected non-empty targets")
 	}
+}
+
+func TestTargetDelegations(t *testing.T) {
+	path := test.CreateTempDir(t, "tuf_temp")
+	tm, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	targets, err := tm.TufClient.LoadDelegatedTargets("opkl", "targets")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Greater(t, len(targets.Signed.Targets), 0)
+}
+
+func TestCreateDelegatedTargetManifests(t *testing.T) {
+	path := test.CreateTempDir(t, "tuf_temp")
+	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	delegations, err := m.GetDelegatedMetadataMirrors()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(t, delegations)
+	assert.Greater(t, len(delegations), 0)
 }

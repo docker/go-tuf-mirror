@@ -4,13 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	_ "embed"
 
 	"github.com/docker/go-tuf-mirror/internal/util"
+	"github.com/theupdateframework/go-tuf/v2/metadata"
 	"github.com/theupdateframework/go-tuf/v2/metadata/config"
 	"github.com/theupdateframework/go-tuf/v2/metadata/fetcher"
 	"github.com/theupdateframework/go-tuf/v2/metadata/trustedmetadata"
@@ -132,4 +136,59 @@ func (t *TufClient) GetPriorRoots(metadataURL string) (map[string][]byte, error)
 
 func (t *TufClient) SetRemoteTargetsURL(url string) {
 	t.cfg.RemoteTargetsURL = url
+}
+
+// Derived from updater.loadTargets() in theupdateframework/go-tuf
+func (t *TufClient) LoadDelegatedTargets(roleName, parentName string) (*metadata.Metadata[metadata.TargetsType], error) {
+	// extract the targets meta from the trusted snapshot metadata
+	meta := t.updater.GetTrustedMetadataSet()
+	metaInfo := meta.Snapshot.Signed.Meta[fmt.Sprintf("%s.json", roleName)]
+	// extract the length of the target metadata to be downloaded
+	length := metaInfo.Length
+	if length == 0 {
+		length = t.cfg.TargetsMaxLength
+	}
+	// extract which target metadata version should be downloaded in case of consistent snapshots
+	version := ""
+	if meta.Root.Signed.ConsistentSnapshot {
+		version = strconv.FormatInt(metaInfo.Version, 10)
+	}
+	// download targets metadata
+	data, err := t.downloadMetadata(roleName, length, version)
+	if err != nil {
+		return nil, err
+	}
+	// verify and load the new target metadata
+	delegatedTargets, err := meta.UpdateDelegatedTargets(data, roleName, parentName)
+	if err != nil {
+		return nil, err
+	}
+	return delegatedTargets, nil
+}
+
+// downloadMetadata download a metadata file and return it as bytes
+func (t *TufClient) downloadMetadata(roleName string, length int64, version string) ([]byte, error) {
+	urlPath := ensureTrailingSlash(t.cfg.RemoteMetadataURL)
+	// build urlPath
+	if version == "" {
+		urlPath = fmt.Sprintf("%s%s.json", urlPath, url.QueryEscape(roleName))
+	} else {
+		urlPath = fmt.Sprintf("%s%s.%s.json", urlPath, version, url.QueryEscape(roleName))
+	}
+	return t.cfg.Fetcher.DownloadFile(urlPath, length, time.Second*15)
+}
+
+// ensureTrailingSlash ensures url ends with a slash
+func ensureTrailingSlash(url string) string {
+	if updater.IsWindowsPath(url) {
+		slash := string(filepath.Separator)
+		if strings.HasSuffix(url, slash) {
+			return url
+		}
+		return url + slash
+	}
+	if strings.HasSuffix(url, "/") {
+		return url
+	}
+	return url + "/"
 }

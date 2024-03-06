@@ -28,7 +28,7 @@ func TestTargetsCmd(t *testing.T) {
 		destination string
 		metadata    string
 	}{
-		{"git targets to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL},
+		{"http targets to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL},
 	}
 
 	for _, tc := range testCases {
