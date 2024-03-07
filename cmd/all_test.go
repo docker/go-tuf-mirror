@@ -13,6 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	DelegatedTargetsLength = 2
+)
+
 func TestAll(t *testing.T) {
 	tempDir := os.TempDir()
 	tempPath := types.OCIPrefix + os.TempDir()
@@ -58,8 +62,10 @@ func TestAll(t *testing.T) {
 			_, err = reader.ReadString('\n')
 			require.NoError(t, err)
 			if tc.full {
-				_, err = reader.ReadString('\n')
-				require.NoError(t, err)
+				for i := 0; i < DelegatedTargetsLength; i++ {
+					_, err = reader.ReadString('\n')
+					require.NoError(t, err)
+				}
 			}
 			targetsOut, err := reader.ReadString('\n')
 			require.NoError(t, err)

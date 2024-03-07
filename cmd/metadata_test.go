@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	DelegatedTargetName = "opkl" // TODO: make test metadata so that this will be less brittle with repo changes
+var (
+	DelegatedTargetNames = [2]string{"opkl", "doi"} // TODO: make test metadata so that this will be less brittle with repo changes
 )
 
 func TestMetadataCmd(t *testing.T) {
@@ -39,7 +39,9 @@ func TestMetadataCmd(t *testing.T) {
 				tc.destination,
 				strings.TrimPrefix(tc.destination, types.OCIPrefix))
 			if tc.full {
-				expectedOutput += fmt.Sprintf("Delegated metadata manifest layout saved to %s\n", path.Join(strings.TrimPrefix(tc.destination, types.OCIPrefix), DelegatedTargetName))
+				for _, d := range DelegatedTargetNames {
+					expectedOutput += fmt.Sprintf("Delegated metadata manifest layout saved to %s\n", filepath.Join(strings.TrimPrefix(tc.destination, types.OCIPrefix), d))
+				}
 			}
 
 			b := bytes.NewBufferString("")

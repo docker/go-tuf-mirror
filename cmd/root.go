@@ -28,7 +28,7 @@ func newRootCmd(version string) *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().StringVarP(&o.tufPath, "tuf-path", "t", "", "path on filesystem for tuf root")
-	cmd.PersistentFlags().BoolVarP(&o.full, "full", "f", false, "Mirror full metadata/targets (including delegated targets)")
+	cmd.PersistentFlags().BoolVarP(&o.full, "full", "f", false, "Mirror full metadata/targets (includes delegated targets)")
 
 	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand
 	cmd.AddCommand(newTargetsCmd(o))       // targets subcommand

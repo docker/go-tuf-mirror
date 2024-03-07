@@ -118,7 +118,11 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Metadata manifest pushed to %s\n", imageName)
 		for _, d := range delegated {
-			imageName := fmt.Sprintf("%s:%s", imageName, d.Tag)
+			repo, _, ok := strings.Cut(imageName, ":")
+			if !ok {
+				return fmt.Errorf("failed to get repo from image name: %s", imageName)
+			}
+			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
 			err = mirror.PushToRegistry(d.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated metadata manifest: %w", err)
