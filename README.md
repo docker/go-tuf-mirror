@@ -69,9 +69,9 @@ jobs:
    example:
 
    ```sh
-   ./go-tuf-mirror metadata -f -s "https://docker.github.io/tuf-staging/metadata" -d     "docker://docker/tuf-metadata:latest"
+   ./go-tuf-mirror metadata -f -s "https://docker.github.io/tuf-staging/metadata" -d "docker://docker/tuf-metadata:latest"
 
-   Mirroring TUF metadata https://docker.github.io/tuf-staging/metadata to docker://   docker/tuf-metadata:latest
+   Mirroring TUF metadata https://docker.github.io/tuf-staging/metadata to docker://docker/tuf-metadata:latest
    Metadata manifest pushed to docker/tuf-metadata:latest
    Delegated metadata manifest pushed to docker/tuf-metadata:opkl
    Delegated metadata manifest pushed to docker/tuf-metadata:doi
