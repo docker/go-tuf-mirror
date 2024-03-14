@@ -22,7 +22,7 @@ func TestGetTufTargetsMirror(t *testing.T) {
 	}
 }
 
-func TestTargetDelegations(t *testing.T) {
+func TestTargetDelegationMetadata(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
 	tm, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
 	if err != nil {
@@ -33,4 +33,19 @@ func TestTargetDelegations(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Greater(t, len(targets.Signed.Targets), 0)
+}
+
+func TestGetDelegatedTargetMirrors(t *testing.T) {
+	path := test.CreateTempDir(t, "tuf_temp")
+	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mirrors, err := m.GetDelegatedTargetMirrors()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(mirrors) == 0 {
+		t.Error("Expected non-empty targets")
+	}
 }

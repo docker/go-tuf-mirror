@@ -40,6 +40,11 @@ type MirrorImage struct {
 	Tag   string
 }
 
+type MirrorIndex struct {
+	Index *v1.ImageIndex
+	Tag   string
+}
+
 type TufMirror struct {
 	TufClient   *tuf.TufClient
 	tufPath     string

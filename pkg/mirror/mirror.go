@@ -23,7 +23,7 @@ func NewTufMirror(tufPath string, metadataURL string, targetsURL string) (*TufMi
 	return &TufMirror{TufClient: tufClient, tufPath: tufPath, metadataURL: metadataURL, targetsURL: targetsURL}, nil
 }
 
-func PushToRegistry(image *v1.Image, imageName string) error {
+func PushToRegistry(image any, imageName string) error {
 	// Parse the image name
 	ref, err := name.ParseReference(imageName)
 	if err != nil {
@@ -35,26 +35,45 @@ func PushToRegistry(image *v1.Image, imageName string) error {
 		log.Fatalf("Failed to get authenticator: %v", err)
 	}
 	// Push the image to the registry
-	if err := remote.Write(ref, *image, remote.WithAuth(auth)); err != nil {
-		return fmt.Errorf("failed to push image %s: %w", imageName, err)
+	switch image := image.(type) {
+	case *v1.Image:
+		if err := remote.Write(ref, *image, remote.WithAuth(auth)); err != nil {
+			return fmt.Errorf("failed to push image %s: %w", imageName, err)
+		}
+	case *v1.ImageIndex:
+		if err := remote.WriteIndex(ref, *image, remote.WithAuth(auth)); err != nil {
+			return fmt.Errorf("failed to push image index %s: %w", imageName, err)
+		}
+	default:
+		return fmt.Errorf("unknown image type: %T", image)
 	}
 	return nil
 }
 
-func SaveAsOCILayout(image *v1.Image, path string) error {
+func SaveAsOCILayout(image any, path string) error {
 	// Save the image to the local filesystem
 	err := os.MkdirAll(path, os.FileMode(0744))
 	if err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
-	index := empty.Index
-	l, err := layout.Write(path, index)
-	if err != nil {
-		return fmt.Errorf("failed to create index: %w", err)
-	}
-	err = l.AppendImage(*image)
-	if err != nil {
-		return fmt.Errorf("failed to append image to index: %w", err)
+	switch image := image.(type) {
+	case *v1.Image:
+		index := empty.Index
+		l, err := layout.Write(path, index)
+		if err != nil {
+			return fmt.Errorf("failed to create index: %w", err)
+		}
+		err = l.AppendImage(*image)
+		if err != nil {
+			return fmt.Errorf("failed to append image to index: %w", err)
+		}
+	case *v1.ImageIndex:
+		_, err := layout.Write(path, *image)
+		if err != nil {
+			return fmt.Errorf("failed to create index: %w", err)
+		}
+	default:
+		return fmt.Errorf("unknown image type: %T", image)
 	}
 	return nil
 }

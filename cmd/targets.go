@@ -103,25 +103,55 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create target mirrors: %w", err)
 	}
 
+	// create delegated metadata manifests
+	var delegated []*mirror.MirrorIndex
+	if o.rootOptions.full {
+		delegated, err = m.GetDelegatedTargetMirrors()
+		if err != nil {
+			return fmt.Errorf("failed to create delegated target index manifests: %w", err)
+		}
+	}
+
 	// save target manifests
-	for _, target := range targets {
-		switch {
-		case strings.HasPrefix(o.destination, types.OCIPrefix):
-			path := filepath.Join(strings.TrimPrefix(o.destination, types.OCIPrefix), target.Tag)
-			err = mirror.SaveAsOCILayout(target.Image, path)
+	switch {
+	case strings.HasPrefix(o.destination, types.OCIPrefix):
+		outputPath := strings.TrimPrefix(o.destination, types.OCIPrefix)
+		for _, t := range targets {
+			path := filepath.Join(outputPath, t.Tag)
+			err = mirror.SaveAsOCILayout(t.Image, path)
 			if err != nil {
 				return fmt.Errorf("failed to save target as OCI layout: %w", err)
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "Target manifest layout saved to %s\n", path)
-		case strings.HasPrefix(o.destination, types.RegistryPrefix):
-			repo := strings.TrimPrefix(o.destination, types.RegistryPrefix)
-			imageName := fmt.Sprintf("%s:%s", repo, target.Tag)
-			err = mirror.PushToRegistry(target.Image, imageName)
+		}
+		for _, d := range delegated {
+			path := filepath.Join(outputPath, d.Tag)
+			err = mirror.SaveAsOCILayout(d.Index, path)
+			if err != nil {
+				return fmt.Errorf("failed to save delegated target index as OCI layout: %w", err)
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Delegated target index manifest layout saved to %s\n", path)
+		}
+	case strings.HasPrefix(o.destination, types.RegistryPrefix):
+		repo := strings.TrimPrefix(o.destination, types.RegistryPrefix)
+		for _, t := range targets {
+			imageName := fmt.Sprintf("%s:%s", repo, t.Tag)
+			err = mirror.PushToRegistry(t.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push target manifest: %w", err)
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "Target manifest pushed to %s\n", imageName)
 		}
+		for _, d := range delegated {
+			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
+			err = mirror.PushToRegistry(d.Index, imageName)
+			if err != nil {
+				return fmt.Errorf("failed to push delegated target index manifest: %w", err)
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Delegated target index manifest pushed to %s\n", imageName)
+		}
+	default:
+		return fmt.Errorf("destination not implemented: %s", o.destination)
 	}
 	return nil
 }

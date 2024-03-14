@@ -14,12 +14,6 @@ import (
 )
 
 func TestTargetsCmd(t *testing.T) {
-	opts := defaultRootOptions()
-	cmd := newTargetsCmd(opts)
-	if cmd == nil {
-		t.Fatal("newTargetsCmd returned nil")
-	}
-
 	tempDir := types.OCIPrefix + os.TempDir()
 
 	testCases := []struct {
@@ -27,14 +21,22 @@ func TestTargetsCmd(t *testing.T) {
 		source      string
 		destination string
 		metadata    string
+		full        bool
 	}{
-		{"http targets to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL},
+		{"http targets to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL, false},
+		{"http targets with delegates to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL, true},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			expectedOutput := fmt.Sprintf("Mirroring TUF targets %s to %s\n", tc.source, tc.destination)
 
+			opts := defaultRootOptions()
+			opts.full = tc.full
+			cmd := newTargetsCmd(opts)
+			if cmd == nil {
+				t.Fatal("newTargetsCmd returned nil")
+			}
 			b := bytes.NewBufferString("")
 			cmd.SetOut(b)
 			_ = cmd.PersistentFlags().Set("source", tc.source)
