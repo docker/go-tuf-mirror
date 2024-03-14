@@ -88,6 +88,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/theupdateframework/go-tuf/v2 v2.0.0-20240212235721-171b2e4214de h1:f9TxwCWrNlgxher5HyzzW2WnKiINkgtk2VWQjIarRmw=
 github.com/theupdateframework/go-tuf/v2 v2.0.0-20240212235721-171b2e4214de/go.mod h1:+gWwqe1pk4nvGeOKosGJqPgD+N/kbD9M0QVLL9TGIYU=
+github.com/theupdateframework/go-tuf/v2 v2.0.0-20240222081530-454b12158917 h1:Ov8+IAeR7pivNDC0Cd25MyyaCR3WPlGBED4wNxIFQ8s=
+github.com/theupdateframework/go-tuf/v2 v2.0.0-20240222081530-454b12158917/go.mod h1:+gWwqe1pk4nvGeOKosGJqPgD+N/kbD9M0QVLL9TGIYU=
 github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 h1:e/5i7d4oYZ+C1wj2THlRK+oAhjeS/TRQwMfkIuet3w0=
 github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399/go.mod h1:LdwHTNJT99C5fTAzDz0ud328OgXz+gierycbcIx2fRs=
 github.com/urfave/cli v1.22.12/go.mod h1:sSBEIC79qR6OvcmsD4U3KABeOTxDqQtdDnaFuUN30b8=

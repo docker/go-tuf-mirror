@@ -6,7 +6,7 @@ require (
 	github.com/google/go-containerregistry v0.19.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
-	github.com/theupdateframework/go-tuf/v2 v2.0.0-20240212235721-171b2e4214de
+	github.com/theupdateframework/go-tuf/v2 v2.0.0-20240222081530-454b12158917 // for https://github.com/theupdateframework/go-tuf/pull/611
 )
 
 require (
