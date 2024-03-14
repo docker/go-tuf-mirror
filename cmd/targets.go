@@ -103,7 +103,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create target mirrors: %w", err)
 	}
 
-	// create delegated metadata manifests
+	// create delegated target manifests
 	var delegated []*mirror.MirrorIndex
 	if o.rootOptions.full {
 		delegated, err = m.GetDelegatedTargetMirrors()
