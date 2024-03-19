@@ -48,7 +48,7 @@ func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadata, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to get root metadata: %w", err)
 	}
-	rootMetadata[m.nameFromRole(metadata.ROOT, strconv.FormatInt(rootVersion, 10))] = rootBytes
+	rootMetadata[nameFromRole(metadata.ROOT, strconv.FormatInt(rootVersion, 10))] = rootBytes
 
 	snapshotBytes, err := trustedMetadata.Snapshot.ToBytes(false)
 	if err != nil {
@@ -71,8 +71,8 @@ func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadata, erro
 	}
 	return &TufMetadata{
 		Root:      rootMetadata,
-		Snapshot:  map[string][]byte{m.nameFromRole(metadata.SNAPSHOT, snapshotVersion): snapshotBytes},
-		Targets:   map[string][]byte{m.nameFromRole(metadata.TARGETS, targetsVersion): targetsBytes},
+		Snapshot:  map[string][]byte{nameFromRole(metadata.SNAPSHOT, snapshotVersion): snapshotBytes},
+		Targets:   map[string][]byte{nameFromRole(metadata.TARGETS, targetsVersion): targetsBytes},
 		Timestamp: timestampBytes,
 	}, nil
 }
@@ -156,7 +156,7 @@ func (m *TufMirror) getDelegatedTargetsMetadata() (*[]DelegatedTargetMetadata, e
 		if err != nil {
 			return nil, fmt.Errorf("failed to get role %s metadata: %w", role.Name, err)
 		}
-		meta, ok := md.Snapshot.Signed.Meta[fmt.Sprintf("%s.json", role.Name)]
+		meta, ok := md.Snapshot.Signed.Meta[nameFromRole(role.Name, "")]
 		if !ok {
 			return nil, fmt.Errorf("failed to get role %s metadata: %w", role.Name, err)
 		}
@@ -177,7 +177,7 @@ func (m *TufMirror) buildDelegatedMetadataManifests(delegated *[]DelegatedTarget
 		img := empty.Image
 		img = mutate.MediaType(img, types.OCIManifestSchema1)
 		img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
-		ann := map[string]string{tufFileAnnotation: m.nameFromRole(role.Name, role.Version)}
+		ann := map[string]string{tufFileAnnotation: nameFromRole(role.Name, role.Version)}
 		layer := mutate.Addendum{Layer: static.NewLayer(role.Data, tufMetadataMediaType), Annotations: ann}
 		img, err := mutate.Append(img, layer)
 		if err != nil {
@@ -188,7 +188,7 @@ func (m *TufMirror) buildDelegatedMetadataManifests(delegated *[]DelegatedTarget
 	return manifests, nil
 }
 
-func (*TufMirror) nameFromRole(role, version string) string {
+func nameFromRole(role, version string) string {
 	if version != "" {
 		return fmt.Sprintf("%s.%s.json", version, role)
 	}
