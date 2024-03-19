@@ -48,7 +48,7 @@ func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadata, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to get root metadata: %w", err)
 	}
-	rootMetadata[fmt.Sprintf("%d.root.json", rootVersion)] = rootBytes
+	rootMetadata[m.nameFromRole(metadata.ROOT, strconv.FormatInt(rootVersion, 10))] = rootBytes
 
 	snapshotBytes, err := trustedMetadata.Snapshot.ToBytes(false)
 	if err != nil {
