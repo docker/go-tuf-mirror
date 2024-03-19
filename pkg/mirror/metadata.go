@@ -189,9 +189,8 @@ func (m *TufMirror) buildDelegatedMetadataManifests(delegated *[]DelegatedTarget
 }
 
 func (*TufMirror) nameFromRole(role, version string) string {
-	name := fmt.Sprintf("%s.json", role)
 	if version != "" {
-		name = fmt.Sprintf("%s.%s.json", version, role)
+		return fmt.Sprintf("%s.%s.json", version, role)
 	}
-	return name
+	return fmt.Sprintf("%s.json", role)
 }
