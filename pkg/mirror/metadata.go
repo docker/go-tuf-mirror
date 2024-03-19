@@ -63,16 +63,16 @@ func (m *TufMirror) getTufMetadataMirror(metadataURL string) (*TufMetadata, erro
 		return nil, fmt.Errorf("failed to get timestamp metadata: %w", err)
 	}
 
-	snapshotName := "snapshot.json"
-	targetsName := "targets.json"
+	snapshotVersion := ""
+	targetsVersion := ""
 	if trustedMetadata.Root.Signed.ConsistentSnapshot {
-		snapshotName = fmt.Sprintf("%d.snapshot.json", trustedMetadata.Snapshot.Signed.Version)
-		targetsName = fmt.Sprintf("%d.targets.json", trustedMetadata.Targets[metadata.TARGETS].Signed.Version)
+		snapshotVersion = strconv.FormatInt(trustedMetadata.Snapshot.Signed.Version, 10)
+		targetsVersion = strconv.FormatInt(trustedMetadata.Targets[metadata.TARGETS].Signed.Version, 10)
 	}
 	return &TufMetadata{
 		Root:      rootMetadata,
-		Snapshot:  map[string][]byte{snapshotName: snapshotBytes},
-		Targets:   map[string][]byte{targetsName: targetsBytes},
+		Snapshot:  map[string][]byte{m.nameFromRole(metadata.SNAPSHOT, snapshotVersion): snapshotBytes},
+		Targets:   map[string][]byte{m.nameFromRole(metadata.TARGETS, targetsVersion): targetsBytes},
 		Timestamp: timestampBytes,
 	}, nil
 }
@@ -177,11 +177,7 @@ func (m *TufMirror) buildDelegatedMetadataManifests(delegated *[]DelegatedTarget
 		img := empty.Image
 		img = mutate.MediaType(img, types.OCIManifestSchema1)
 		img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
-		filename := fmt.Sprintf("%s.json", role.Name)
-		if role.Version != "" {
-			filename = fmt.Sprintf("%s.%s.json", role.Version, role.Name)
-		}
-		ann := map[string]string{tufFileAnnotation: filename}
+		ann := map[string]string{tufFileAnnotation: m.nameFromRole(role.Name, role.Version)}
 		layer := mutate.Addendum{Layer: static.NewLayer(role.Data, tufMetadataMediaType), Annotations: ann}
 		img, err := mutate.Append(img, layer)
 		if err != nil {
@@ -190,4 +186,12 @@ func (m *TufMirror) buildDelegatedMetadataManifests(delegated *[]DelegatedTarget
 		manifests = append(manifests, &MirrorImage{Image: &img, Tag: role.Name})
 	}
 	return manifests, nil
+}
+
+func (*TufMirror) nameFromRole(role, version string) string {
+	name := fmt.Sprintf("%s.json", role)
+	if version != "" {
+		name = fmt.Sprintf("%s.%s.json", version, role)
+	}
+	return name
 }
