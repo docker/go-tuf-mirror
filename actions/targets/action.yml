@@ -13,11 +13,16 @@ inputs:
     description: destination targets location
     required: true
     default: docker://docker/tuf-targets
+  flags:
+    description: flags to pass to the go-tuf-mirror command
+    required: false
+    default: ""
 runs:
   using: docker
-  image: docker://docker/go-tuf-mirror@sha256:84b13371685bfe3725189370de9bdc7b9e0e6106d0f94bbbae6f687b8afaac22 # v0.1.0
+  image: docker://docker/go-tuf-mirror@sha256:7c4568ae29a6356ce249420b1e229af6f00c0b0c2db3f3abb7a49897d2c08fbc # v0.1.2
   args:
     - targets
+    - ${{ inputs.flags }}
     - --metadata
     - ${{ inputs.metadata }}
     - --source
