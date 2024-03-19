@@ -31,8 +31,9 @@ type TufMetadata struct {
 }
 
 type DelegatedTargetMetadata struct {
-	Name string
-	Data []byte
+	Name    string
+	Version string
+	Data    []byte
 }
 
 type MirrorImage struct {

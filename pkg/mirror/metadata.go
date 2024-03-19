@@ -2,6 +2,7 @@ package mirror
 
 import (
 	"fmt"
+	"strconv"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -155,7 +156,16 @@ func (m *TufMirror) getDelegatedTargetsMetadata() (*[]DelegatedTargetMetadata, e
 		if err != nil {
 			return nil, fmt.Errorf("failed to get role %s metadata: %w", role.Name, err)
 		}
-		*delegatedTargets = append(*delegatedTargets, DelegatedTargetMetadata{Name: role.Name, Data: roleBytes})
+		meta, ok := md.Snapshot.Signed.Meta[fmt.Sprintf("%s.json", role.Name)]
+		if !ok {
+			return nil, fmt.Errorf("failed to get role %s metadata: %w", role.Name, err)
+		}
+		// extract target metadata version in case of consistent snapshot naming
+		version := ""
+		if md.Root.Signed.ConsistentSnapshot {
+			version = strconv.FormatInt(meta.Version, 10)
+		}
+		*delegatedTargets = append(*delegatedTargets, DelegatedTargetMetadata{Name: role.Name, Version: version, Data: roleBytes})
 	}
 	return delegatedTargets, nil
 }
@@ -167,7 +177,11 @@ func (m *TufMirror) buildDelegatedMetadataManifests(delegated *[]DelegatedTarget
 		img := empty.Image
 		img = mutate.MediaType(img, types.OCIManifestSchema1)
 		img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
-		ann := map[string]string{tufFileAnnotation: fmt.Sprintf("%s.json", role.Name)}
+		filename := fmt.Sprintf("%s.json", role.Name)
+		if role.Version != "" {
+			filename = fmt.Sprintf("%s.%s.json", role.Version, role.Name)
+		}
+		ann := map[string]string{tufFileAnnotation: filename}
 		layer := mutate.Addendum{Layer: static.NewLayer(role.Data, tufMetadataMediaType), Annotations: ann}
 		img, err := mutate.Append(img, layer)
 		if err != nil {
