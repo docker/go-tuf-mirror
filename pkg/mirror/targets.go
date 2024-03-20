@@ -105,7 +105,7 @@ func (m *TufMirror) GetDelegatedTargetMirrors() ([]*MirrorIndex, error) {
 				Add: img,
 				Descriptor: v1.Descriptor{
 					Annotations: map[string]string{
-						tufFileAnnotation: fmt.Sprintf("%s/%s", subdir, filename),
+						tufFileAnnotation: fmt.Sprintf("%s/%s", subdir, name),
 					},
 				},
 			})
