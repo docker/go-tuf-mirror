@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/docker/go-tuf-mirror/internal/util"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
@@ -58,10 +57,7 @@ func (m *TufMirror) GetDelegatedTargetMirrors() ([]*MirrorIndex, error) {
 	roles := md.Targets[metadata.TARGETS].Signed.Delegations.Roles
 	for _, role := range roles {
 		// create an image index
-		index, err := util.CreateEmptyIndex()
-		if err != nil {
-			return nil, fmt.Errorf("failed to create image index: %w", err)
-		}
+		index := v1.ImageIndex(empty.Index)
 		subdir, ok := strings.CutSuffix(role.Paths[0], "/*") // only support one top level directory per role
 		if !ok {
 			return nil, fmt.Errorf("failed to find targets subdirectory in path: %s", role.Paths[0])
