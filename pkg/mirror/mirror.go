@@ -1,7 +1,6 @@
 package mirror
 
 import (
-	_ "embed"
 	"fmt"
 	"log"
 	"os"
@@ -15,8 +14,11 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
-func NewTufMirror(tufPath string, metadataURL string, targetsURL string) (*TufMirror, error) {
-	tufClient, err := tuf.NewTufClient(InitialRoot, tufPath, metadataURL, targetsURL)
+func NewTufMirror(root []byte, tufPath, metadataURL, targetsURL string) (*TufMirror, error) {
+	if root == nil {
+		root = DefaultRoot
+	}
+	tufClient, err := tuf.NewTufClient(root, tufPath, metadataURL, targetsURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create TUF client: %w", err)
 	}

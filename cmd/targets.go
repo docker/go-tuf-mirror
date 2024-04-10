@@ -88,7 +88,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		} else {
 			tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 		}
-		m, err = mirror.NewTufMirror(tufPath, o.metadata, o.source)
+		m, err = mirror.NewTufMirror(nil, tufPath, o.metadata, o.source)
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}

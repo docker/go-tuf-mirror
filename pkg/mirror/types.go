@@ -9,7 +9,7 @@ import (
 )
 
 //go:embed 1.root-staging.json
-var InitialRoot []byte
+var DefaultRoot []byte
 
 const (
 	DefaultMetadataURL   = "https://docker.github.io/tuf-staging/metadata"

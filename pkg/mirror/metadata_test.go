@@ -13,7 +13,7 @@ import (
 
 func TestGetTufMetadataMirror(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
 	assert.Nil(t, err)
 
 	tufMetadata, err := m.getTufMetadataMirror(DefaultMetadataURL)
@@ -28,7 +28,7 @@ func TestGetTufMetadataMirror(t *testing.T) {
 
 func TestGetMetadataManifest(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
 	assert.Nil(t, err)
 
 	img, err := m.GetMetadataManifest(DefaultMetadataURL)
@@ -65,7 +65,7 @@ func TestGetMetadataManifest(t *testing.T) {
 
 func TestGetDelegatedMetadataMirrors(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
 	assert.Nil(t, err)
 
 	delegations, err := m.GetDelegatedMetadataMirrors()

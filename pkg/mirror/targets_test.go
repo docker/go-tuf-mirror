@@ -19,7 +19,7 @@ type Layers struct {
 
 func TestGetTufTargetsMirror(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
 	assert.Nil(t, err)
 
 	targets, err := m.GetTufTargetMirrors()
@@ -50,7 +50,7 @@ func TestGetTufTargetsMirror(t *testing.T) {
 
 func TestTargetDelegationMetadata(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
-	tm, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	tm, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
 	assert.Nil(t, err)
 
 	targets, err := tm.TufClient.LoadDelegatedTargets("opkl", "targets")
@@ -60,7 +60,7 @@ func TestTargetDelegationMetadata(t *testing.T) {
 
 func TestGetDelegatedTargetMirrors(t *testing.T) {
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
 	assert.Nil(t, err)
 
 	mirrors, err := m.GetDelegatedTargetMirrors()
