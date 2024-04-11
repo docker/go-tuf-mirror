@@ -58,10 +58,6 @@ func (m *TufMirror) GetDelegatedTargetMirrors() ([]*MirrorIndex, error) {
 	for _, role := range roles {
 		// create an image index
 		index := v1.ImageIndex(empty.Index)
-		subdir, ok := strings.CutSuffix(role.Paths[0], "/*") // only support one top level directory per role
-		if !ok {
-			return nil, fmt.Errorf("failed to find targets subdirectory in path: %s", role.Paths[0])
-		}
 
 		// get delegated targets metadata for role
 		roleMeta, err := m.TufClient.LoadDelegatedTargets(role.Name, metadata.TARGETS)
@@ -85,7 +81,8 @@ func (m *TufMirror) GetDelegatedTargetMirrors() ([]*MirrorIndex, error) {
 			if !ok {
 				return nil, fmt.Errorf("missing sha256 hash for target %s", target.Path)
 			}
-			filename, ok := strings.CutPrefix(target.Path, subdir+"/")
+			filename := filepath.Base(target.Path)
+			subdir, ok := strings.CutSuffix(target.Path, "/"+filename)
 			if !ok {
 				return nil, fmt.Errorf("failed to find target subdirectory [%s] in path: %s", subdir, target.Path)
 			}
@@ -106,7 +103,7 @@ func (m *TufMirror) GetDelegatedTargetMirrors() ([]*MirrorIndex, error) {
 				},
 			})
 		}
-		mirror = append(mirror, &MirrorIndex{Index: &index, Tag: subdir})
+		mirror = append(mirror, &MirrorIndex{Index: &index, Tag: role.Name})
 	}
 	return mirror, nil
 }
