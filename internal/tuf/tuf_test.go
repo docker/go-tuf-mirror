@@ -2,12 +2,15 @@ package tuf
 
 import (
 	_ "embed"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
-//go:embed 1.root-staging.json
-var InitialRoot []byte
+//go:embed testdata/test-repo/metadata/1.root.json
+var TestRoot []byte
 
 // NewTufClient creates a new TUF client
 func TestRootInit(t *testing.T) {
@@ -15,17 +18,32 @@ func TestRootInit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = NewTufClient(InitialRoot, tufPath, "https://docker.github.io/tuf-staging/metadata", "https://docker.github.io/tuf-staging/targets")
-	if err != nil {
-		t.Fatal("Failed to create TUF client: ", err)
+
+	// Start a test HTTP server to serve data from ./testdata/test-repo/ paths
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join(".", "testdata", "test-repo"))))
+	defer server.Close()
+
+	testCases := []struct {
+		name           string
+		metadataSource string
+		targetsSource  string
+	}{
+		{"http", server.URL + "/metadata", server.URL + "/targets"},
 	}
-	// recreation should work with same root
-	_, err = NewTufClient(InitialRoot, tufPath, "https://docker.github.io/tuf-staging/metadata", "https://docker.github.io/tuf-staging/targets")
-	if err != nil {
-		t.Fatal("Failed to recreate TUF client:", err)
-	}
-	_, err = NewTufClient([]byte("broken"), tufPath, "https://docker.github.io/tuf-staging/metadata", "https://docker.github.io/tuf-staging/targets")
-	if err == nil {
-		t.Fatal("Expected error recreating TUF client with broken root")
+
+	for _, tc := range testCases {
+		_, err = NewTufClient(TestRoot, tufPath, tc.metadataSource, tc.targetsSource)
+		if err != nil {
+			t.Fatal("Failed to create TUF client: ", err)
+		}
+		// recreation should work with same root
+		_, err = NewTufClient(TestRoot, tufPath, tc.metadataSource, tc.targetsSource)
+		if err != nil {
+			t.Fatal("Failed to recreate TUF client:", err)
+		}
+		_, err = NewTufClient([]byte("broken"), tufPath, tc.metadataSource, tc.targetsSource)
+		if err == nil {
+			t.Fatal("Expected error recreating TUF client with broken root")
+		}
 	}
 }
