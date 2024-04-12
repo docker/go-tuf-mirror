@@ -10,6 +10,7 @@ import (
 
 type rootOptions struct {
 	tufPath string
+	tufRoot []byte
 	mirror  *mirror.TufMirror
 	full    bool
 }
@@ -29,6 +30,15 @@ func newRootCmd(version string) *cobra.Command {
 	}
 	cmd.PersistentFlags().StringVarP(&o.tufPath, "tuf-path", "t", "", "path on filesystem for tuf root")
 	cmd.PersistentFlags().BoolVarP(&o.full, "full", "f", false, "Mirror full metadata/targets (includes delegated targets)")
+	root := cmd.PersistentFlags().StringP("tuf-root", "r", "", "specify embedded tuf root [dev, staging], default [staging]")
+	switch *root {
+	case "dev":
+		o.tufRoot = mirror.DevRoot
+	case "staging":
+		o.tufRoot = mirror.StagingRoot
+	default:
+		o.tufRoot = mirror.DefaultRoot
+	}
 
 	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand
 	cmd.AddCommand(newTargetsCmd(o))       // targets subcommand

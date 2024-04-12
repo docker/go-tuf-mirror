@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/docker/go-tuf-mirror/pkg/mirror"
@@ -16,6 +19,9 @@ import (
 func TestTargetsCmd(t *testing.T) {
 	tempDir := types.OCIPrefix + os.TempDir()
 
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	testCases := []struct {
 		name        string
 		source      string
@@ -23,8 +29,8 @@ func TestTargetsCmd(t *testing.T) {
 		metadata    string
 		full        bool
 	}{
-		{"http targets to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL, false},
-		{"http targets with delegates to oci", mirror.DefaultTargetsURL, tempDir, mirror.DefaultMetadataURL, true},
+		{"http targets to oci", server.URL + "/targets", tempDir, server.URL + "/metadata", false},
+		{"http targets with delegates to oci", server.URL + "/targets", tempDir, server.URL + "/metadata", true},
 	}
 
 	for _, tc := range testCases {
@@ -33,6 +39,7 @@ func TestTargetsCmd(t *testing.T) {
 
 			opts := defaultRootOptions()
 			opts.full = tc.full
+			opts.tufRoot = mirror.DevRoot
 			cmd := newTargetsCmd(opts)
 			if cmd == nil {
 				t.Fatal("newTargetsCmd returned nil")

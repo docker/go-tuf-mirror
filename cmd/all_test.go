@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/docker/go-tuf-mirror/pkg/mirror"
@@ -14,12 +17,16 @@ import (
 )
 
 const (
-	DelegatedTargetsLength = 2
+	DelegatedTargetsLength = 1
 )
 
 func TestAll(t *testing.T) {
 	tempDir := os.TempDir()
 	tempPath := types.OCIPrefix + os.TempDir()
+
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	testCases := []struct {
 		name    string
 		srcMeta string
@@ -28,8 +35,8 @@ func TestAll(t *testing.T) {
 		dstTgt  string
 		full    bool
 	}{
-		{"http to oci", mirror.DefaultMetadataURL, tempPath, mirror.DefaultTargetsURL, tempPath, false},
-		{"http with delegates to oci", mirror.DefaultMetadataURL, tempPath, mirror.DefaultTargetsURL, tempPath, true},
+		{"http to oci", server.URL + "/metadata", tempPath, server.URL + "/targets", tempPath, false},
+		{"http with delegates to oci", server.URL + "/metadata", tempPath, server.URL + "/targets", tempPath, true},
 	}
 
 	for _, tc := range testCases {
@@ -37,6 +44,7 @@ func TestAll(t *testing.T) {
 			opts := defaultRootOptions()
 			opts.tufPath = tempDir
 			opts.full = tc.full
+			opts.tufRoot = mirror.DevRoot
 			cmd := newAllCmd(opts)
 
 			expectedMetadataOutput := fmt.Sprintf("Mirroring TUF metadata %s to %s\n", tc.srcMeta, tc.dstMeta)

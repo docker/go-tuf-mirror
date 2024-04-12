@@ -56,10 +56,10 @@ func newTargetsCmd(opts *rootOptions) *cobra.Command {
 
 func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 	// only support web to registry or oci layout for now
-	if !strings.HasPrefix(o.metadata, types.WebPrefix) {
+	if !strings.HasPrefix(o.metadata, types.WebPrefix) && !strings.HasPrefix(o.metadata, types.InsecureWebPrefix) {
 		return fmt.Errorf("metadata not implemented: %s", o.source)
 	}
-	if !strings.HasPrefix(o.source, types.WebPrefix) {
+	if !strings.HasPrefix(o.source, types.WebPrefix) && !strings.HasPrefix(o.source, types.InsecureWebPrefix) {
 		return fmt.Errorf("source not implemented: %s", o.source)
 	}
 	if !(strings.HasPrefix(o.destination, types.RegistryPrefix) || strings.HasPrefix(o.destination, types.OCIPrefix)) {
@@ -88,7 +88,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		} else {
 			tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 		}
-		m, err = mirror.NewTufMirror(nil, tufPath, o.metadata, o.source)
+		m, err = mirror.NewTufMirror(o.rootOptions.tufRoot, tufPath, o.metadata, o.source)
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}

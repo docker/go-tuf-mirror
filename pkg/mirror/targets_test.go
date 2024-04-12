@@ -2,6 +2,9 @@ package mirror
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -18,8 +21,11 @@ type Layers struct {
 }
 
 func TestGetTufTargetsMirror(t *testing.T) {
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(DevRoot, path, server.URL+"/metadata", server.URL+"/targets")
 	assert.Nil(t, err)
 
 	targets, err := m.GetTufTargetMirrors()
@@ -49,18 +55,24 @@ func TestGetTufTargetsMirror(t *testing.T) {
 }
 
 func TestTargetDelegationMetadata(t *testing.T) {
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	path := test.CreateTempDir(t, "tuf_temp")
-	tm, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
+	tm, err := NewTufMirror(DevRoot, path, server.URL+"/metadata", server.URL+"/targets")
 	assert.Nil(t, err)
 
-	targets, err := tm.TufClient.LoadDelegatedTargets("opkl", "targets")
+	targets, err := tm.TufClient.LoadDelegatedTargets("test-role", "targets")
 	assert.Nil(t, err)
 	assert.Greater(t, len(targets.Signed.Targets), 0)
 }
 
 func TestGetDelegatedTargetMirrors(t *testing.T) {
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(DevRoot, path, server.URL+"/metadata", server.URL+"/targets")
 	assert.Nil(t, err)
 
 	mirrors, err := m.GetDelegatedTargetMirrors()

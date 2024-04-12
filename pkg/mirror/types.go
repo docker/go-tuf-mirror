@@ -8,8 +8,13 @@ import (
 	"github.com/theupdateframework/go-tuf/v2/metadata"
 )
 
-//go:embed 1.root-staging.json
-var DefaultRoot []byte
+//go:embed embedded-roots/1.root-dev.json
+var DevRoot []byte
+
+//go:embed embedded-roots/1.root-staging.json
+var StagingRoot []byte
+
+var DefaultRoot = StagingRoot
 
 const (
 	DefaultMetadataURL   = "https://docker.github.io/tuf-staging/metadata"

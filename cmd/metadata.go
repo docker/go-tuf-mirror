@@ -50,7 +50,7 @@ func newMetadataCmd(opts *rootOptions) *cobra.Command {
 
 func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	// only support web to registry or oci layout for now
-	if !strings.HasPrefix(o.source, types.WebPrefix) {
+	if !strings.HasPrefix(o.source, types.WebPrefix) && !strings.HasPrefix(o.source, types.InsecureWebPrefix) {
 		return fmt.Errorf("source not implemented: %s", o.source)
 	}
 	if !(strings.HasPrefix(o.destination, types.RegistryPrefix) || strings.HasPrefix(o.destination, types.OCIPrefix)) {
@@ -71,7 +71,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
-	m, err := mirror.NewTufMirror(nil, tufPath, o.source, "")
+	m, err := mirror.NewTufMirror(o.rootOptions.tufRoot, tufPath, o.source, "")
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}

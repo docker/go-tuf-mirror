@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,11 +18,14 @@ import (
 )
 
 var (
-	DelegatedTargetNames = [2]string{"opkl", "doi"} // TODO: make test metadata so that this will be less brittle with repo changes
+	DelegatedTargetNames = [1]string{"test-role"}
 )
 
 func TestMetadataCmd(t *testing.T) {
 	tempDir := types.OCIPrefix + os.TempDir()
+
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
 
 	testCases := []struct {
 		name        string
@@ -28,8 +33,8 @@ func TestMetadataCmd(t *testing.T) {
 		destination string
 		full        bool
 	}{
-		{"http metadata to oci", mirror.DefaultMetadataURL, tempDir, false},
-		{"http metadata with delegates to oci", mirror.DefaultMetadataURL, tempDir, true},
+		{"http metadata to oci", server.URL + "/metadata", tempDir, false},
+		{"http metadata with delegates to oci", server.URL + "/metadata", tempDir, true},
 	}
 
 	for _, tc := range testCases {
@@ -47,6 +52,7 @@ func TestMetadataCmd(t *testing.T) {
 			b := bytes.NewBufferString("")
 			opts := defaultRootOptions()
 			opts.full = tc.full
+			opts.tufRoot = mirror.DevRoot
 			cmd := newMetadataCmd(opts)
 			if cmd == nil {
 				t.Fatal("newMetadataCmd returned nil")

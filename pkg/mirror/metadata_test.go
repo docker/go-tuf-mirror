@@ -2,6 +2,9 @@ package mirror
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -12,11 +15,14 @@ import (
 )
 
 func TestGetTufMetadataMirror(t *testing.T) {
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(DevRoot, path, server.URL+"/metadata", server.URL+"/targets")
 	assert.Nil(t, err)
 
-	tufMetadata, err := m.getTufMetadataMirror(DefaultMetadataURL)
+	tufMetadata, err := m.getTufMetadataMirror(server.URL + "/metadata")
 	assert.Nil(t, err)
 
 	// check that all roles are not empty
@@ -27,11 +33,14 @@ func TestGetTufMetadataMirror(t *testing.T) {
 }
 
 func TestGetMetadataManifest(t *testing.T) {
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(DevRoot, path, server.URL+"/metadata", server.URL+"/targets")
 	assert.Nil(t, err)
 
-	img, err := m.GetMetadataManifest(DefaultMetadataURL)
+	img, err := m.GetMetadataManifest(server.URL + "/metadata")
 	assert.Nil(t, err)
 	assert.NotNil(t, img)
 
@@ -64,8 +73,11 @@ func TestGetMetadataManifest(t *testing.T) {
 }
 
 func TestGetDelegatedMetadataMirrors(t *testing.T) {
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "..", "internal", "tuf", "testdata", "test-repo"))))
+	defer server.Close()
+
 	path := test.CreateTempDir(t, "tuf_temp")
-	m, err := NewTufMirror(nil, path, DefaultMetadataURL, DefaultTargetsURL)
+	m, err := NewTufMirror(DevRoot, path, server.URL+"/metadata", server.URL+"/targets")
 	assert.Nil(t, err)
 
 	delegations, err := m.GetDelegatedMetadataMirrors()
