@@ -39,7 +39,7 @@ func TestTargetsCmd(t *testing.T) {
 
 			opts := defaultRootOptions()
 			opts.full = tc.full
-			opts.tufRoot = mirror.DevRoot
+			opts.tufRootBytes = mirror.DevRoot
 			cmd := newTargetsCmd(opts)
 			if cmd == nil {
 				t.Fatal("newTargetsCmd returned nil")

@@ -3,16 +3,17 @@ package cmd
 import (
 	_ "embed"
 	"fmt"
+	"log"
 
 	"github.com/docker/go-tuf-mirror/pkg/mirror"
 	"github.com/spf13/cobra"
 )
 
 type rootOptions struct {
-	tufPath string
-	tufRoot []byte
-	mirror  *mirror.TufMirror
-	full    bool
+	tufPath      string
+	tufRootBytes []byte
+	mirror       *mirror.TufMirror
+	full         bool
 }
 
 func defaultRootOptions() *rootOptions {
@@ -33,11 +34,13 @@ func newRootCmd(version string) *cobra.Command {
 	root := cmd.PersistentFlags().StringP("tuf-root", "r", "", "specify embedded tuf root [dev, staging], default [staging]")
 	switch *root {
 	case "dev":
-		o.tufRoot = mirror.DevRoot
+		o.tufRootBytes = mirror.DevRoot
 	case "staging":
-		o.tufRoot = mirror.StagingRoot
+		o.tufRootBytes = mirror.StagingRoot
+	case "":
+		o.tufRootBytes = mirror.DefaultRoot
 	default:
-		o.tufRoot = mirror.DefaultRoot
+		log.Fatalf("invalid tuf root: %s", *root)
 	}
 
 	cmd.AddCommand(newMetadataCmd(o))      // metadata subcommand

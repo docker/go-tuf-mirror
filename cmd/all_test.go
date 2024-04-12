@@ -44,7 +44,7 @@ func TestAll(t *testing.T) {
 			opts := defaultRootOptions()
 			opts.tufPath = tempDir
 			opts.full = tc.full
-			opts.tufRoot = mirror.DevRoot
+			opts.tufRootBytes = mirror.DevRoot
 			cmd := newAllCmd(opts)
 
 			expectedMetadataOutput := fmt.Sprintf("Mirroring TUF metadata %s to %s\n", tc.srcMeta, tc.dstMeta)

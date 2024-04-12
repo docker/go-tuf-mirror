@@ -52,7 +52,7 @@ func TestMetadataCmd(t *testing.T) {
 			b := bytes.NewBufferString("")
 			opts := defaultRootOptions()
 			opts.full = tc.full
-			opts.tufRoot = mirror.DevRoot
+			opts.tufRootBytes = mirror.DevRoot
 			cmd := newMetadataCmd(opts)
 			if cmd == nil {
 				t.Fatal("newMetadataCmd returned nil")

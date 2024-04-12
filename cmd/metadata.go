@@ -71,7 +71,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
-	m, err := mirror.NewTufMirror(o.rootOptions.tufRoot, tufPath, o.source, "")
+	m, err := mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.source, "")
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}
