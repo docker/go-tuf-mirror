@@ -92,6 +92,8 @@ github.com/moby/term v0.5.0 h1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=
 github.com/moby/term v0.5.0/go.mod h1:8FzsFHVUBGZdbDsJw/ot+X+d5HLUbvklYLJ9uGfcI3Y=
 github.com/morikuni/aec v1.0.0 h1:nP9CBfwrvYnBRgY6qfDQkygYDmYwOilePFkwzv4dU8A=
 github.com/morikuni/aec v1.0.0/go.mod h1:BbKIizmSmc5MMPqRYbxO4ZU0S0+P200+tUnFx7PXmsc=
+github.com/mrjoelkamp/go-tuf/v2 v2.0.1 h1:nDJGPlrU05sirPlA16M1XJiGDqM0zMwguA4cVgCJ9YY=
+github.com/mrjoelkamp/go-tuf/v2 v2.0.1/go.mod h1:LJo5jrV0LYV0jVSbCjPem6+0zrkPz8FnimzIECzsFDY=
 github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
 github.com/opencontainers/image-spec v1.1.0 h1:8SG7/vwALn54lVB/0yZ/MMwhFrPYtpEHQb2IpWsCzug=
@@ -141,8 +143,6 @@ github.com/testcontainers/testcontainers-go v0.30.0 h1:jmn/XS22q4YRrcMwWg0pAwlCl
 github.com/testcontainers/testcontainers-go v0.30.0/go.mod h1:K+kHNGiM5zjklKjgTtcrEetF3uhWbMUyqAQoyoh8Pf0=
 github.com/testcontainers/testcontainers-go/modules/registry v0.30.0 h1:/GYaNnQ09Gvwv3GvhWYbzL2gQiqwzlqDyQZ175uVPC4=
 github.com/testcontainers/testcontainers-go/modules/registry v0.30.0/go.mod h1:bu2AS7kGxJQgZ16qbb5SHKSuEVrriENPIpKugl0aCHA=
-github.com/theupdateframework/go-tuf/v2 v2.0.0-20240402164131-b2e024ad4752 h1:zAxJkm4kMawpzJT7X0KpVBQeZ5su5XtZZBClSLvJBE8=
-github.com/theupdateframework/go-tuf/v2 v2.0.0-20240402164131-b2e024ad4752/go.mod h1:LJo5jrV0LYV0jVSbCjPem6+0zrkPz8FnimzIECzsFDY=
 github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 h1:e/5i7d4oYZ+C1wj2THlRK+oAhjeS/TRQwMfkIuet3w0=
 github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399/go.mod h1:LdwHTNJT99C5fTAzDz0ud328OgXz+gierycbcIx2fRs=
 github.com/tklauser/go-sysconf v0.3.12 h1:0QaGUFOdQaIVdPgfITYzaTegZvdCjmYO52cSFAEVmqU=
