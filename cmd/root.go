@@ -5,8 +5,17 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/docker/go-tuf-mirror/pkg/mirror"
+	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/spf13/cobra"
+)
+
+const (
+	OCIPrefix         = "oci://"    // filesystem oci layout
+	RegistryPrefix    = "docker://" // remote registry
+	LocalPrefix       = "file://"   // local filesystem
+	WebPrefix         = "https://"  // web
+	InsecureWebPrefix = "http://"   // insecure web
 )
 
 type rootOptions struct {
@@ -34,11 +43,11 @@ func newRootCmd(version string) *cobra.Command {
 	root := cmd.PersistentFlags().StringP("tuf-root", "r", "", "specify embedded tuf root [dev, staging], default [staging]")
 	switch *root {
 	case "dev":
-		o.tufRootBytes = mirror.DevRoot
+		o.tufRootBytes = embed.DevRoot
 	case "staging":
-		o.tufRootBytes = mirror.StagingRoot
+		o.tufRootBytes = embed.StagingRoot
 	case "":
-		o.tufRootBytes = mirror.DefaultRoot
+		o.tufRootBytes = embed.DefaultRoot
 	default:
 		log.Fatalf("invalid tuf root: %s", *root)
 	}

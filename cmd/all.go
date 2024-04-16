@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/docker/go-tuf-mirror/pkg/mirror"
-	"github.com/docker/go-tuf-mirror/pkg/types"
+	"github.com/docker/attest/pkg/mirror"
 	"github.com/spf13/cobra"
 )
 
@@ -32,10 +31,10 @@ func newAllCmd(opts *rootOptions) *cobra.Command {
 		SilenceUsage: false,
 		RunE:         o.run,
 	}
-	cmd.Flags().StringVar(&o.srcMeta, "source-metadata", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.WebPrefix, types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
-	cmd.Flags().StringVar(&o.dstMeta, "dest-metadata", "", fmt.Sprintf("Destination metadata location %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
-	cmd.Flags().StringVar(&o.srcTargets, "source-targets", mirror.DefaultTargetsURL, fmt.Sprintf("Source targets location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.WebPrefix, types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
-	cmd.Flags().StringVar(&o.dstTargets, "dest-targets", "", fmt.Sprintf("Destination targets location %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
+	cmd.Flags().StringVar(&o.srcMeta, "source-metadata", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
+	cmd.Flags().StringVar(&o.dstMeta, "dest-metadata", "", fmt.Sprintf("Destination metadata location %s<OCI layout>, %s<filesystem> or %s<remote registry>", OCIPrefix, LocalPrefix, RegistryPrefix))
+	cmd.Flags().StringVar(&o.srcTargets, "source-targets", mirror.DefaultTargetsURL, fmt.Sprintf("Source targets location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
+	cmd.Flags().StringVar(&o.dstTargets, "dest-targets", "", fmt.Sprintf("Destination targets location %s<OCI layout>, %s<filesystem> or %s<remote registry>", OCIPrefix, LocalPrefix, RegistryPrefix))
 
 	err := cmd.MarkFlagRequired("source-metadata")
 	if err != nil {

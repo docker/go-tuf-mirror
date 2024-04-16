@@ -7,9 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/docker/attest/pkg/mirror"
 	"github.com/docker/go-tuf-mirror/internal/util"
-	"github.com/docker/go-tuf-mirror/pkg/mirror"
-	"github.com/docker/go-tuf-mirror/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -35,9 +34,9 @@ func newTargetsCmd(opts *rootOptions) *cobra.Command {
 		SilenceUsage: false,
 		RunE:         o.run,
 	}
-	cmd.PersistentFlags().StringVarP((&o.metadata), "metadata", "m", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.WebPrefix, types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
-	cmd.PersistentFlags().StringVarP(&o.source, "source", "s", mirror.DefaultMetadataURL, fmt.Sprintf("Source targets location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.WebPrefix, types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
-	cmd.PersistentFlags().StringVarP(&o.destination, "destination", "d", "", fmt.Sprintf("Destination targets location %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
+	cmd.PersistentFlags().StringVarP((&o.metadata), "metadata", "m", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
+	cmd.PersistentFlags().StringVarP(&o.source, "source", "s", mirror.DefaultMetadataURL, fmt.Sprintf("Source targets location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
+	cmd.PersistentFlags().StringVarP(&o.destination, "destination", "d", "", fmt.Sprintf("Destination targets location %s<OCI layout>, %s<filesystem> or %s<remote registry>", OCIPrefix, LocalPrefix, RegistryPrefix))
 
 	err := cmd.MarkPersistentFlagRequired("metadata")
 	if err != nil {
@@ -56,19 +55,19 @@ func newTargetsCmd(opts *rootOptions) *cobra.Command {
 
 func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 	// only support web to registry or oci layout for now
-	if !strings.HasPrefix(o.metadata, types.WebPrefix) && !strings.HasPrefix(o.metadata, types.InsecureWebPrefix) {
+	if !strings.HasPrefix(o.metadata, WebPrefix) && !strings.HasPrefix(o.metadata, InsecureWebPrefix) {
 		return fmt.Errorf("metadata not implemented: %s", o.source)
 	}
-	if !strings.HasPrefix(o.source, types.WebPrefix) && !strings.HasPrefix(o.source, types.InsecureWebPrefix) {
+	if !strings.HasPrefix(o.source, WebPrefix) && !strings.HasPrefix(o.source, InsecureWebPrefix) {
 		return fmt.Errorf("source not implemented: %s", o.source)
 	}
-	if !(strings.HasPrefix(o.destination, types.RegistryPrefix) || strings.HasPrefix(o.destination, types.OCIPrefix)) {
+	if !(strings.HasPrefix(o.destination, RegistryPrefix) || strings.HasPrefix(o.destination, OCIPrefix)) {
 		return fmt.Errorf("destination not implemented: %s", o.destination)
 	}
 	if !util.IsValidUrl(o.source) {
 		return fmt.Errorf("invalid source url: %s", o.source)
 	}
-	if strings.HasPrefix(o.destination, types.RegistryPrefix) && strings.Contains(strings.TrimPrefix(o.destination, types.RegistryPrefix), ":") {
+	if strings.HasPrefix(o.destination, RegistryPrefix) && strings.Contains(strings.TrimPrefix(o.destination, RegistryPrefix), ":") {
 		return fmt.Errorf("destination registry should not specify tag: %s", o.destination)
 	}
 
@@ -114,8 +113,8 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 
 	// save target manifests
 	switch {
-	case strings.HasPrefix(o.destination, types.OCIPrefix):
-		outputPath := strings.TrimPrefix(o.destination, types.OCIPrefix)
+	case strings.HasPrefix(o.destination, OCIPrefix):
+		outputPath := strings.TrimPrefix(o.destination, OCIPrefix)
 		for _, t := range targets {
 			path := filepath.Join(outputPath, t.Tag)
 			err = mirror.SaveAsOCILayout(t.Image, path)
@@ -132,8 +131,8 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "Delegated target index manifest layout saved to %s\n", path)
 		}
-	case strings.HasPrefix(o.destination, types.RegistryPrefix):
-		repo := strings.TrimPrefix(o.destination, types.RegistryPrefix)
+	case strings.HasPrefix(o.destination, RegistryPrefix):
+		repo := strings.TrimPrefix(o.destination, RegistryPrefix)
 		for _, t := range targets {
 			imageName := fmt.Sprintf("%s:%s", repo, t.Tag)
 			err = mirror.PushToRegistry(t.Image, imageName)

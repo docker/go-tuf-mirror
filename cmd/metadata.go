@@ -7,9 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/docker/attest/pkg/mirror"
 	"github.com/docker/go-tuf-mirror/internal/util"
-	"github.com/docker/go-tuf-mirror/pkg/mirror"
-	"github.com/docker/go-tuf-mirror/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -34,8 +33,8 @@ func newMetadataCmd(opts *rootOptions) *cobra.Command {
 		SilenceUsage: false,
 		RunE:         o.run,
 	}
-	cmd.PersistentFlags().StringVarP(&o.source, "source", "s", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.WebPrefix, types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
-	cmd.PersistentFlags().StringVarP(&o.destination, "destination", "d", "", fmt.Sprintf("Destination metadata location %s<OCI layout>, %s<filesystem> or %s<remote registry>", types.OCIPrefix, types.LocalPrefix, types.RegistryPrefix))
+	cmd.PersistentFlags().StringVarP(&o.source, "source", "s", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
+	cmd.PersistentFlags().StringVarP(&o.destination, "destination", "d", "", fmt.Sprintf("Destination metadata location %s<OCI layout>, %s<filesystem> or %s<remote registry>", OCIPrefix, LocalPrefix, RegistryPrefix))
 
 	err := cmd.MarkPersistentFlagRequired("source")
 	if err != nil {
@@ -50,10 +49,10 @@ func newMetadataCmd(opts *rootOptions) *cobra.Command {
 
 func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	// only support web to registry or oci layout for now
-	if !strings.HasPrefix(o.source, types.WebPrefix) && !strings.HasPrefix(o.source, types.InsecureWebPrefix) {
+	if !strings.HasPrefix(o.source, WebPrefix) && !strings.HasPrefix(o.source, InsecureWebPrefix) {
 		return fmt.Errorf("source not implemented: %s", o.source)
 	}
-	if !(strings.HasPrefix(o.destination, types.RegistryPrefix) || strings.HasPrefix(o.destination, types.OCIPrefix)) {
+	if !(strings.HasPrefix(o.destination, RegistryPrefix) || strings.HasPrefix(o.destination, OCIPrefix)) {
 		return fmt.Errorf("destination not implemented: %s", o.destination)
 	}
 	if !util.IsValidUrl(o.source) {
@@ -95,8 +94,8 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 
 	// save metadata manifest
 	switch {
-	case strings.HasPrefix(o.destination, types.OCIPrefix):
-		path := strings.TrimPrefix(o.destination, types.OCIPrefix)
+	case strings.HasPrefix(o.destination, OCIPrefix):
+		path := strings.TrimPrefix(o.destination, OCIPrefix)
 		err = mirror.SaveAsOCILayout(manifest, path)
 		if err != nil {
 			return fmt.Errorf("failed to save metadata as OCI layout: %w", err)
@@ -110,8 +109,8 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "Delegated metadata manifest layout saved to %s\n", path)
 		}
-	case strings.HasPrefix(o.destination, types.RegistryPrefix):
-		imageName := strings.TrimPrefix(o.destination, types.RegistryPrefix)
+	case strings.HasPrefix(o.destination, RegistryPrefix):
+		imageName := strings.TrimPrefix(o.destination, RegistryPrefix)
 		err = mirror.PushToRegistry(manifest, imageName)
 		if err != nil {
 			return fmt.Errorf("failed to push metadata manifest: %w", err)

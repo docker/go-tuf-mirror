@@ -11,8 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/go-tuf-mirror/pkg/mirror"
-	"github.com/docker/go-tuf-mirror/pkg/types"
+	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,9 +21,9 @@ var (
 )
 
 func TestMetadataCmd(t *testing.T) {
-	tempDir := types.OCIPrefix + os.TempDir()
+	tempDir := OCIPrefix + os.TempDir()
 
-	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "tuf", "testdata", "test-repo"))))
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "test", "testdata", "test-repo"))))
 	defer server.Close()
 
 	testCases := []struct {
@@ -42,17 +41,17 @@ func TestMetadataCmd(t *testing.T) {
 			expectedOutput := fmt.Sprintf("Mirroring TUF metadata %s to %s\nMetadata manifest layout saved to %s\n",
 				tc.source,
 				tc.destination,
-				strings.TrimPrefix(tc.destination, types.OCIPrefix))
+				strings.TrimPrefix(tc.destination, OCIPrefix))
 			if tc.full {
 				for _, d := range DelegatedTargetNames {
-					expectedOutput += fmt.Sprintf("Delegated metadata manifest layout saved to %s\n", filepath.Join(strings.TrimPrefix(tc.destination, types.OCIPrefix), d))
+					expectedOutput += fmt.Sprintf("Delegated metadata manifest layout saved to %s\n", filepath.Join(strings.TrimPrefix(tc.destination, OCIPrefix), d))
 				}
 			}
 
 			b := bytes.NewBufferString("")
 			opts := defaultRootOptions()
 			opts.full = tc.full
-			opts.tufRootBytes = mirror.DevRoot
+			opts.tufRootBytes = embed.DevRoot
 			cmd := newMetadataCmd(opts)
 			if cmd == nil {
 				t.Fatal("newMetadataCmd returned nil")
