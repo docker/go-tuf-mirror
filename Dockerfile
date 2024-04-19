@@ -4,7 +4,18 @@ WORKDIR /
 
 COPY go.* .
 
-RUN go mod download;
+# This block can be replaced by `RUN go mod download` when github.com/docker/attest is public
+RUN apk add --no-cache git
+ENV GOPRIVATE="github.com/docker/attest"
+RUN --mount=type=secret,id=GITHUB_TOKEN <<EOT
+  set -e
+  GITHUB_TOKEN=${GITHUB_TOKEN:-$(cat /run/secrets/GITHUB_TOKEN)}
+  if [ -n "$GITHUB_TOKEN" ]; then
+    echo "Setting GitHub access token"
+    git config --global "url.https://x-access-token:${GITHUB_TOKEN}@github.com.insteadof" "https://github.com"
+  fi
+  go mod download
+EOT
 
 FROM --platform=$BUILDPLATFORM golang:1.22.0-alpine as build
 
