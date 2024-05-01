@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 golang:1.22.0-alpine as deps
+FROM --platform=linux/amd64 golang:1.22.2-alpine as deps
 
 WORKDIR /
 
@@ -17,7 +17,7 @@ RUN --mount=type=secret,id=GITHUB_TOKEN <<EOT
   go mod download
 EOT
 
-FROM --platform=$BUILDPLATFORM golang:1.22.0-alpine as build
+FROM --platform=$BUILDPLATFORM golang:1.22.2-alpine as build
 
 WORKDIR /
 
