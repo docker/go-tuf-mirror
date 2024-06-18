@@ -47,7 +47,7 @@ jobs:
           username: dockerpublicbot
           password: ${{ secrets.DOCKERPUBLICBOT_WRITE_PAT }}
       - name: Build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
