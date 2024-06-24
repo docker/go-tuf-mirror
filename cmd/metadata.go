@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/attest/pkg/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -70,15 +71,15 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
-	m, err := mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.source, "")
+	m, err := mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.source, "", tuf.NewVersionChecker())
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}
 	// set mirror in root options for reuse in targets
 	o.rootOptions.mirror = m
 
-	// create metadata manifest
-	manifest, err := m.GetMetadataManifest(o.source)
+	// create metadata image
+	image, err := m.GetMetadataManifest(o.source)
 	if err != nil {
 		return fmt.Errorf("failed to create metadata manifest: %w", err)
 	}
@@ -96,14 +97,14 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	switch {
 	case strings.HasPrefix(o.destination, OCIPrefix):
 		path := strings.TrimPrefix(o.destination, OCIPrefix)
-		err = mirror.SaveAsOCILayout(manifest, path)
+		err = mirror.SaveImageAsOCILayout(image, path)
 		if err != nil {
 			return fmt.Errorf("failed to save metadata as OCI layout: %w", err)
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Metadata manifest layout saved to %s\n", path)
 		for _, d := range delegated {
 			path := filepath.Join(path, d.Tag)
-			err = mirror.SaveAsOCILayout(d.Image, path)
+			err = mirror.SaveImageAsOCILayout(d.Image, path)
 			if err != nil {
 				return fmt.Errorf("failed to save delegated metadata as OCI layout: %w", err)
 			}
@@ -111,7 +112,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		}
 	case strings.HasPrefix(o.destination, RegistryPrefix):
 		imageName := strings.TrimPrefix(o.destination, RegistryPrefix)
-		err = mirror.PushToRegistry(manifest, imageName)
+		err = mirror.SaveImageAsOCILayout(image, imageName)
 		if err != nil {
 			return fmt.Errorf("failed to push metadata manifest: %w", err)
 		}
@@ -122,7 +123,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("failed to get repo from image name: %s", imageName)
 			}
 			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
-			err = mirror.PushToRegistry(d.Image, imageName)
+			err = mirror.PushImageToRegistry(d.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated metadata manifest: %w", err)
 			}

@@ -64,7 +64,7 @@ jobs:
           secrets: |
             GITHUB_TOKEN=${{ steps.app-token.outputs.token }}
       - name: Sign and push
-        uses: docker/image-signer-verifier/actions/sign@f01da364d0684acb8f6e80fc9f4f6d2d8eb3f360 # v0.4.8
+        uses: docker/image-signer-verifier/actions/sign@1b2d2ede2ace3fbfaff1e9145ab1a25a466633c3 # v0.5.3
         with:
           kms-key-arn: ${{ vars.AWS_KMS_ARN }}
           signed-image-path: "${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}"

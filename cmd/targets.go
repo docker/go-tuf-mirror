@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/attest/pkg/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -87,7 +88,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		} else {
 			tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 		}
-		m, err = mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.metadata, o.source)
+		m, err = mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.metadata, o.source, tuf.NewVersionChecker())
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}
@@ -117,7 +118,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		outputPath := strings.TrimPrefix(o.destination, OCIPrefix)
 		for _, t := range targets {
 			path := filepath.Join(outputPath, t.Tag)
-			err = mirror.SaveAsOCILayout(t.Image, path)
+			err = mirror.SaveImageAsOCILayout(t.Image, path)
 			if err != nil {
 				return fmt.Errorf("failed to save target as OCI layout: %w", err)
 			}
@@ -125,7 +126,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		for _, d := range delegated {
 			path := filepath.Join(outputPath, d.Tag)
-			err = mirror.SaveAsOCILayout(d.Index, path)
+			err = mirror.SaveIndexAsOCILayout(d.Index, path)
 			if err != nil {
 				return fmt.Errorf("failed to save delegated target index as OCI layout: %w", err)
 			}
@@ -135,7 +136,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		repo := strings.TrimPrefix(o.destination, RegistryPrefix)
 		for _, t := range targets {
 			imageName := fmt.Sprintf("%s:%s", repo, t.Tag)
-			err = mirror.PushToRegistry(t.Image, imageName)
+			err = mirror.SaveImageAsOCILayout(t.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push target manifest: %w", err)
 			}
@@ -143,7 +144,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		for _, d := range delegated {
 			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
-			err = mirror.PushToRegistry(d.Index, imageName)
+			err = mirror.PushIndexToRegistry(d.Index, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated target index manifest: %w", err)
 			}
