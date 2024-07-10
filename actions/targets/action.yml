@@ -26,13 +26,9 @@ runs:
   args:
     - targets
     - ${{ inputs.flags }}
-    - --metadata
-    - ${{ inputs.metadata }}
-    - --source
-    - ${{ inputs.source }}
-    - --destination
-    - ${{ inputs.destination }}
-    - --tuf-root
-    - ${{ inputs.tuf-root }}
+    - --metadata=${{ inputs.metadata }}
+    - --source=${{ inputs.source }}
+    - --destination=${{ inputs.destination }}
+    - --tuf-root=${{ inputs.tuf-root }}
   env:
     DOCKER_CONFIG: /github/workspace/.docker
