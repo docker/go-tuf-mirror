@@ -9,7 +9,6 @@ import (
 
 	"github.com/docker/attest/pkg/mirror"
 	"github.com/docker/attest/pkg/tuf"
-	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -89,7 +88,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		} else {
 			tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 		}
-		rootBytes, err := embed.GetRootBytes(o.rootOptions.tufRoot)
+		rootBytes, err := tuf.GetEmbeddedTufRootBytes(o.rootOptions.tufRoot)
 		if err != nil {
 			return fmt.Errorf("failed to get root bytes: %w", err)
 		}
