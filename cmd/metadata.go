@@ -73,11 +73,11 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
-	rootBytes, err := tuf.GetEmbeddedTufRootBytes(o.rootOptions.tufRoot)
+	root, err := tuf.GetEmbeddedTufRoot(o.rootOptions.tufRoot)
 	if err != nil {
 		return fmt.Errorf("failed to get root bytes: %w", err)
 	}
-	m, err := mirror.NewTufMirror(rootBytes, tufPath, o.source, o.targets, tuf.NewVersionChecker())
+	m, err := mirror.NewTufMirror(root.Data, tufPath, o.source, o.targets, tuf.NewVersionChecker())
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}
