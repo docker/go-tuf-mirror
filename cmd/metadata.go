@@ -70,6 +70,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 	}
 
+	fmt.Printf("TUF ROOT: %s", o.rootOptions.tufRootBytes)
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
 	m, err := mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.source, "", tuf.NewVersionChecker())
 	if err != nil {

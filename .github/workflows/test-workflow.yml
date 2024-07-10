@@ -32,6 +32,13 @@ jobs:
         with:
           username: dockerpublicbot
           password: ${{ secrets.DOCKERPUBLICBOT_WRITE_PAT }}
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.DOCKER_READ_APP_PRIVATE_KEY }}
+          repositories: "attest,go-tuf-mirror"
       - name: Mirror metadata
         uses: docker/go-tuf-mirror/actions/metadata@update-attest-016
         with:
@@ -39,6 +46,8 @@ jobs:
           destination: docker://docker/tuf-metadata-staging:latest
           tuf-root: staging
           flags: "-f"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Mirror targets
         uses: docker/go-tuf-mirror/actions/targets@update-attest-016
         with:
@@ -47,3 +56,5 @@ jobs:
           destination: docker://docker/tuf-targets-staging
           tuf-root: staging
           flags: "-f"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
