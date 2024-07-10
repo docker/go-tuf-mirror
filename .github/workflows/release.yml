@@ -2,7 +2,6 @@ name: release
 on:
   release:
     types: [published]
-  pull_request:
 env:
   IMAGE_NAME: docker/go-tuf-mirror
   DOCKER_CONFIG: ${{ github.workspace }}/.docker
@@ -65,9 +64,9 @@ jobs:
           provenance: mode=max
           secrets: |
             GITHUB_TOKEN=${{ steps.app-token.outputs.token }}
-      # - name: Sign and push
-      #   uses: docker/image-signer-verifier/actions/sign@268a8c6b4084a1dddb60c7ea058e79f6bf784eeb # v0.5.5
-      #   with:
-      #     kms-key-arn: ${{ vars.AWS_KMS_ARN }}
-      #     signed-image-path: "${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}"
-      #     always-push: true
+      - name: Sign and push
+        uses: docker/image-signer-verifier/actions/sign@268a8c6b4084a1dddb60c7ea058e79f6bf784eeb # v0.5.5
+        with:
+          kms-key-arn: ${{ vars.AWS_KMS_ARN }}
+          signed-image-path: "${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}"
+          always-push: true
