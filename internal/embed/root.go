@@ -10,4 +10,7 @@ var DevRoot []byte
 //go:embed embedded-roots/1.root-staging.json
 var StagingRoot []byte
 
-var DefaultRoot = StagingRoot
+//go:embed embedded-roots/1.root.json
+var ProdRoot []byte
+
+var DefaultRoot = ProdRoot

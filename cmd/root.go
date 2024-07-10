@@ -40,12 +40,14 @@ func newRootCmd(version string) *cobra.Command {
 	}
 	cmd.PersistentFlags().StringVarP(&o.tufPath, "tuf-path", "t", "", "path on filesystem for tuf root")
 	cmd.PersistentFlags().BoolVarP(&o.full, "full", "f", false, "Mirror full metadata/targets (includes delegated targets)")
-	root := cmd.PersistentFlags().StringP("tuf-root", "r", "", "specify embedded tuf root [dev, staging], default [staging]")
+	root := cmd.PersistentFlags().StringP("tuf-root", "r", "", "specify embedded tuf root [dev, staging, prod], default [prod]")
 	switch *root {
 	case "dev":
 		o.tufRootBytes = embed.DevRoot
 	case "staging":
 		o.tufRootBytes = embed.StagingRoot
+	case "prod":
+		o.tufRootBytes = embed.ProdRoot
 	case "":
 		o.tufRootBytes = embed.DefaultRoot
 	default:
