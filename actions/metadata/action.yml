@@ -24,6 +24,7 @@ runs:
     - ${{ inputs.flags }}
     - --source=${{ inputs.source }}
     - --destination=${{ inputs.destination }}
-    - --tuf-root=${{ inputs.tuf-root }}
+    - --tuf-root
+    - ${{ inputs.tuf-root }}
   env:
     DOCKER_CONFIG: /github/workspace/.docker
