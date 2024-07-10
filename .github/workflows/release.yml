@@ -58,7 +58,7 @@ jobs:
             VERSION=v${{ steps.meta.outputs.version }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           outputs: type=oci,tar=false,dest=./unsigned-image
           attests: type=sbom,generator=docker/scout-sbom-indexer:1
           provenance: mode=max
