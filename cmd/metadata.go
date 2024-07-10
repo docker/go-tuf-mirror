@@ -9,11 +9,13 @@ import (
 
 	"github.com/docker/attest/pkg/mirror"
 	"github.com/docker/attest/pkg/tuf"
+	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/spf13/cobra"
 )
 
 type metadataOptions struct {
+	targets     string
 	source      string
 	destination string
 	rootOptions *rootOptions
@@ -34,6 +36,7 @@ func newMetadataCmd(opts *rootOptions) *cobra.Command {
 		SilenceUsage: false,
 		RunE:         o.run,
 	}
+	cmd.PersistentFlags().StringVarP((&o.targets), "targets", "m", mirror.DefaultTargetsURL, fmt.Sprintf("Source targets location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
 	cmd.PersistentFlags().StringVarP(&o.source, "source", "s", mirror.DefaultMetadataURL, fmt.Sprintf("Source metadata location %s<web>, %s<OCI layout>, %s<filesystem> or %s<remote registry>", WebPrefix, OCIPrefix, LocalPrefix, RegistryPrefix))
 	cmd.PersistentFlags().StringVarP(&o.destination, "destination", "d", "", fmt.Sprintf("Destination metadata location %s<OCI layout>, %s<filesystem> or %s<remote registry>", OCIPrefix, LocalPrefix, RegistryPrefix))
 
@@ -70,9 +73,12 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 	}
 
-	fmt.Printf("TUF ROOT: %s", o.rootOptions.tufRootBytes)
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
-	m, err := mirror.NewTufMirror(o.rootOptions.tufRootBytes, tufPath, o.source, "", tuf.NewVersionChecker())
+	rootBytes, err := embed.GetRootBytes(o.rootOptions.tufRoot)
+	if err != nil {
+		return fmt.Errorf("failed to get root bytes: %w", err)
+	}
+	m, err := mirror.NewTufMirror(rootBytes, tufPath, o.source, o.targets, tuf.NewVersionChecker())
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}

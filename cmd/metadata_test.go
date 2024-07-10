@@ -11,7 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,7 +50,7 @@ func TestMetadataCmd(t *testing.T) {
 			b := bytes.NewBufferString("")
 			opts := defaultRootOptions()
 			opts.full = tc.full
-			opts.tufRootBytes = embed.DevRoot
+			opts.tufRoot = "dev"
 			cmd := newMetadataCmd(opts)
 			if cmd == nil {
 				t.Fatal("newMetadataCmd returned nil")

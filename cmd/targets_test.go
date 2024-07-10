@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,7 +37,7 @@ func TestTargetsCmd(t *testing.T) {
 
 			opts := defaultRootOptions()
 			opts.full = tc.full
-			opts.tufRootBytes = embed.DevRoot
+			opts.tufRoot = "dev"
 			cmd := newTargetsCmd(opts)
 			if cmd == nil {
 				t.Fatal("newTargetsCmd returned nil")

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/docker/go-tuf-mirror/internal/embed"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -43,7 +42,7 @@ func TestAll(t *testing.T) {
 			opts := defaultRootOptions()
 			opts.tufPath = tempDir
 			opts.full = tc.full
-			opts.tufRootBytes = embed.DevRoot
+			opts.tufRoot = "dev"
 			cmd := newAllCmd(opts)
 
 			expectedMetadataOutput := fmt.Sprintf("Mirroring TUF metadata %s to %s\n", tc.srcMeta, tc.dstMeta)

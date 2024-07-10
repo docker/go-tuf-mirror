@@ -63,6 +63,8 @@ func (o *allOptions) run(cmd *cobra.Command, args []string) error {
 
 	_ = metadata.PersistentFlags().Set("source", o.srcMeta)
 	_ = metadata.PersistentFlags().Set("destination", o.dstMeta)
+	_ = metadata.PersistentFlags().Set("targets", o.srcTargets)
+
 	_ = targets.PersistentFlags().Set("source", o.srcTargets)
 	_ = targets.PersistentFlags().Set("destination", o.dstTargets)
 	_ = targets.PersistentFlags().Set("metadata", o.srcMeta)

@@ -2,6 +2,7 @@ package embed
 
 import (
 	_ "embed"
+	"fmt"
 )
 
 //go:embed embedded-roots/1.root-dev.json
@@ -14,3 +15,18 @@ var StagingRoot []byte
 var ProdRoot []byte
 
 var DefaultRoot = ProdRoot
+
+func GetRootBytes(root string) ([]byte, error) {
+	switch root {
+	case "dev":
+		return DevRoot, nil
+	case "staging":
+		return StagingRoot, nil
+	case "prod":
+		return ProdRoot, nil
+	case "":
+		return DefaultRoot, nil
+	default:
+		return nil, fmt.Errorf("invalid tuf root: %s", root)
+	}
+}
