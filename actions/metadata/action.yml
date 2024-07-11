@@ -5,6 +5,10 @@ inputs:
     description: source metadata location
     default: https://docker.github.io/tuf/metadata
     required: true
+  targets:
+    description: source targets location
+    default: https://docker.github.io/tuf/targets
+    required: true
   destination:
     description: destination metadata location
     required: true
@@ -22,6 +26,7 @@ runs:
   args:
     - metadata
     - ${{ inputs.flags }}
+    - --targets=${{ inputs.targets }}
     - --source=${{ inputs.source }}
     - --destination=${{ inputs.destination }}
     - --tuf-root=${{ inputs.tuf-root }}
