@@ -140,7 +140,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		repo := strings.TrimPrefix(o.destination, RegistryPrefix)
 		for _, t := range targets {
 			imageName := fmt.Sprintf("%s:%s", repo, t.Tag)
-			err = mirror.SaveImageAsOCILayout(t.Image, imageName)
+			err = mirror.PushImageToRegistry(t.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push target manifest: %w", err)
 			}

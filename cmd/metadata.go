@@ -118,7 +118,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		}
 	case strings.HasPrefix(o.destination, RegistryPrefix):
 		imageName := strings.TrimPrefix(o.destination, RegistryPrefix)
-		err = mirror.SaveImageAsOCILayout(image, imageName)
+		err = mirror.PushImageToRegistry(image, imageName)
 		if err != nil {
 			return fmt.Errorf("failed to push metadata manifest: %w", err)
 		}
