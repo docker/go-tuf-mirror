@@ -10,6 +10,7 @@ import (
 	"github.com/docker/attest/pkg/mirror"
 	"github.com/docker/attest/pkg/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/spf13/cobra"
 )
 
@@ -124,11 +125,11 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Metadata manifest pushed to %s\n", imageName)
 		for _, d := range delegated {
-			repo, _, ok := strings.Cut(imageName, ":")
-			if !ok {
-				return fmt.Errorf("failed to get repo from image name: %s", imageName)
+			ref, err := name.ParseReference(imageName)
+			if err != nil {
+				return fmt.Errorf("failed to parse image name: %w", err)
 			}
-			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
+			imageName := fmt.Sprintf("%s:%s", ref.Context().Name(), d.Tag)
 			err = mirror.PushImageToRegistry(d.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated metadata manifest: %w", err)

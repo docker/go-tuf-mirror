@@ -10,6 +10,7 @@ import (
 	"github.com/docker/attest/pkg/mirror"
 	"github.com/docker/attest/pkg/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/spf13/cobra"
 )
 
@@ -68,8 +69,16 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 	if !util.IsValidUrl(o.source) {
 		return fmt.Errorf("invalid source url: %s", o.source)
 	}
-	if strings.HasPrefix(o.destination, RegistryPrefix) && strings.Contains(strings.TrimPrefix(o.destination, RegistryPrefix), ":") {
-		return fmt.Errorf("destination registry should not specify tag: %s", o.destination)
+	if strings.HasPrefix(o.destination, RegistryPrefix) {
+		ref, err := name.ParseReference(strings.TrimPrefix(o.destination, RegistryPrefix))
+		if err != nil {
+			return fmt.Errorf("failed to parse destination registry reference: %w", err)
+		}
+		registry := ref.Context().RegistryStr()
+		_, _, found := strings.Cut(strings.TrimPrefix(ref.String(), registry), ":")
+		if found {
+			return fmt.Errorf("destination registry reference should not have a tag: %s", o.destination)
+		}
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF targets %s to %s\n", o.source, o.destination)
