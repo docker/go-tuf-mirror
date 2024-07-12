@@ -24,7 +24,7 @@ const (
 )
 
 func TestTargetsCmd(t *testing.T) {
-	tempDir := OCIPrefix + os.TempDir()
+	tempDir := OCIPrefix + os.TempDir() + "test"
 
 	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "test", "testdata", "test-repo"))))
 	defer server.Close()
@@ -70,20 +70,18 @@ func TestTargetsCmd(t *testing.T) {
 			err := cmd.Execute()
 			require.NoError(t, err)
 
-			os.RemoveAll(tc.destination)
-
 			reader := bufio.NewReader(b)
 			out, err := reader.ReadString('\n')
 			require.NoError(t, err)
-
 			assert.Equal(t, expectedOutput, out)
 
 			// check that index was saved to oci layout
 			if strings.HasPrefix(tc.destination, OCIPrefix) {
-				data, err := os.ReadFile(filepath.Join(strings.TrimPrefix(tc.destination, OCIPrefix), "index.json"))
+				data, err := os.ReadFile(filepath.Join(strings.TrimPrefix(tc.destination, OCIPrefix), filepath.Join(targetFile, "index.json")))
 				require.NoError(t, err)
 				assert.True(t, len(data) > 0)
-				os.RemoveAll(tc.destination)
+				err = os.RemoveAll(strings.TrimPrefix(tc.destination, OCIPrefix))
+				require.NoError(t, err)
 			}
 
 			// check that image was pushed to registry

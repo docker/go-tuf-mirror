@@ -24,7 +24,7 @@ var (
 )
 
 func TestMetadataCmd(t *testing.T) {
-	tempDir := OCIPrefix + os.TempDir()
+	tempDir := OCIPrefix + os.TempDir() + "test"
 
 	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "test", "testdata", "test-repo"))))
 	defer server.Close()
@@ -101,7 +101,8 @@ func TestMetadataCmd(t *testing.T) {
 				data, err := os.ReadFile(filepath.Join(strings.TrimPrefix(tc.destination, OCIPrefix), "index.json"))
 				require.NoError(t, err)
 				assert.True(t, len(data) > 0)
-				os.RemoveAll(tc.destination)
+				err = os.RemoveAll(strings.TrimPrefix(tc.destination, OCIPrefix))
+				require.NoError(t, err)
 			}
 
 			// check that image was pushed to registry

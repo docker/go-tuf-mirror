@@ -71,7 +71,8 @@ func TestAll(t *testing.T) {
 			err := cmd.Execute()
 			require.NoError(t, err)
 
-			os.RemoveAll("./tmp")
+			err = os.RemoveAll("./tmp")
+			require.NoError(t, err)
 
 			reader := bufio.NewReader(b)
 			metaOut, err := reader.ReadString('\n')
