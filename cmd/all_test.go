@@ -21,8 +21,8 @@ const (
 )
 
 func TestAll(t *testing.T) {
-	tempDir := os.TempDir()
-	tempPath := OCIPrefix + os.TempDir()
+	tempDir := filepath.Join(os.TempDir(), "test")
+	tempPath := OCIPrefix + tempDir
 
 	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "test", "testdata", "test-repo"))))
 	defer server.Close()

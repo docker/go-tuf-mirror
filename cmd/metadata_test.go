@@ -24,7 +24,7 @@ var (
 )
 
 func TestMetadataCmd(t *testing.T) {
-	tempDir := OCIPrefix + os.TempDir() + "test"
+	tempDir := OCIPrefix + filepath.Join(os.TempDir(), "test")
 
 	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("..", "internal", "test", "testdata", "test-repo"))))
 	defer server.Close()
