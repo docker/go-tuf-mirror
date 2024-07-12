@@ -75,8 +75,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to parse destination registry reference: %w", err)
 		}
 		registry := ref.Context().RegistryStr()
-		_, _, found := strings.Cut(strings.TrimPrefix(ref.String(), registry), ":")
-		if found {
+		if strings.Contains(strings.TrimPrefix(ref.String(), registry), ":") {
 			return fmt.Errorf("destination registry reference should not have a tag: %s", o.destination)
 		}
 	}
