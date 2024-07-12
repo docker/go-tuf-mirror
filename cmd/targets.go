@@ -78,6 +78,9 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		if strings.Contains(strings.TrimPrefix(ref.String(), registry), ":") {
 			return fmt.Errorf("destination registry reference should not have a tag: %s", o.destination)
 		}
+		if strings.Contains(ref.String(), "@") {
+			return fmt.Errorf("destination registry reference should not have a digest: %s", o.destination)
+		}
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF targets %s to %s\n", o.source, o.destination)

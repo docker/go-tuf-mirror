@@ -59,6 +59,9 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	if !(strings.HasPrefix(o.destination, RegistryPrefix) || strings.HasPrefix(o.destination, OCIPrefix)) {
 		return fmt.Errorf("destination not implemented: %s", o.destination)
 	}
+	if strings.HasPrefix(o.destination, RegistryPrefix) && strings.Contains(o.destination, "@") {
+		return fmt.Errorf("destination registry reference should not have a digest: %s", o.destination)
+	}
 	if !util.IsValidUrl(o.source) {
 		return fmt.Errorf("invalid source url: %s", o.source)
 	}
