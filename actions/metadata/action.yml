@@ -22,7 +22,7 @@ inputs:
     default: ""
 runs:
   using: docker
-  image: docker://docker/go-tuf-mirror@sha256:7b978d73ad627d980020cea03ef8095b2302fdf5cc20f2ec34cf5ee18a09c768 # v0.1.10
+  image: docker://docker/go-tuf-mirror@sha256:1ad906c93c180e1815e8489027fbb88a8fd1ad1fc0d597c4526e9ce4797b9f81 # v0.2.0
   args:
     - metadata
     - ${{ inputs.flags }}
