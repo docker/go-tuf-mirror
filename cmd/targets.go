@@ -70,16 +70,9 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid source url: %s", o.source)
 	}
 	if strings.HasPrefix(o.destination, RegistryPrefix) {
-		ref, err := name.ParseReference(strings.TrimPrefix(o.destination, RegistryPrefix))
+		_, err := name.NewRepository(strings.TrimPrefix(o.destination, RegistryPrefix))
 		if err != nil {
 			return fmt.Errorf("failed to parse destination registry reference: %w", err)
-		}
-		registry := ref.Context().RegistryStr()
-		if strings.Contains(strings.TrimPrefix(ref.String(), registry), ":") {
-			return fmt.Errorf("destination registry reference should not have a tag: %s", o.destination)
-		}
-		if strings.Contains(ref.String(), "@") {
-			return fmt.Errorf("destination registry reference should not have a digest: %s", o.destination)
 		}
 	}
 
