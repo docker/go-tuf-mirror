@@ -19,7 +19,7 @@ const (
 type rootOptions struct {
 	tufPath string
 	tufRoot string
-	mirror  *mirror.TufMirror
+	mirror  *mirror.TUFMirror
 	full    bool
 }
 

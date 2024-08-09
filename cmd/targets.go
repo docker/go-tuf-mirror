@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/attest/pkg/oci"
 	"github.com/docker/attest/pkg/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -92,27 +93,27 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		} else {
 			tufPath = strings.TrimSpace(o.rootOptions.tufPath)
 		}
-		root, err := tuf.GetEmbeddedTufRoot(o.rootOptions.tufRoot)
+		root, err := tuf.GetEmbeddedRoot(o.rootOptions.tufRoot)
 		if err != nil {
 			return fmt.Errorf("failed to get root bytes: %w", err)
 		}
-		m, err = mirror.NewTufMirror(root.Data, tufPath, o.metadata, o.source, tuf.NewVersionChecker())
+		m, err = mirror.NewTUFMirror(root.Data, tufPath, o.metadata, o.source, tuf.NewDefaultVersionChecker())
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}
 	} else {
 		// set remote targets url for existing mirror
-		m.TufClient.SetRemoteTargetsURL(o.source)
+		m.TUFClient.SetRemoteTargetsURL(o.source)
 	}
 
 	// create target manifests
-	targets, err := m.GetTufTargetMirrors()
+	targets, err := m.GetTUFTargetMirrors()
 	if err != nil {
 		return fmt.Errorf("failed to create target mirrors: %w", err)
 	}
 
 	// create delegated target manifests
-	var delegated []*mirror.MirrorIndex
+	var delegated []*mirror.Index
 	if o.rootOptions.full {
 		delegated, err = m.GetDelegatedTargetMirrors()
 		if err != nil {
@@ -126,7 +127,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		outputPath := strings.TrimPrefix(o.destination, OCIPrefix)
 		for _, t := range targets {
 			path := filepath.Join(outputPath, t.Tag)
-			err = mirror.SaveImageAsOCILayout(t.Image, path)
+			err = oci.SaveImageAsOCILayout(t.Image, path)
 			if err != nil {
 				return fmt.Errorf("failed to save target as OCI layout: %w", err)
 			}
@@ -134,7 +135,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		for _, d := range delegated {
 			path := filepath.Join(outputPath, d.Tag)
-			err = mirror.SaveIndexAsOCILayout(d.Index, path)
+			err = oci.SaveIndexAsOCILayout(d.Index, path)
 			if err != nil {
 				return fmt.Errorf("failed to save delegated target index as OCI layout: %w", err)
 			}
@@ -144,7 +145,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		repo := strings.TrimPrefix(o.destination, RegistryPrefix)
 		for _, t := range targets {
 			imageName := fmt.Sprintf("%s:%s", repo, t.Tag)
-			err = mirror.PushImageToRegistry(t.Image, imageName)
+			err = oci.PushImageToRegistry(t.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push target manifest: %w", err)
 			}
@@ -152,7 +153,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		for _, d := range delegated {
 			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
-			err = mirror.PushIndexToRegistry(d.Index, imageName)
+			err = oci.PushIndexToRegistry(d.Index, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated target index manifest: %w", err)
 			}

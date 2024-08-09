@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/attest/pkg/oci"
 	"github.com/docker/attest/pkg/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -77,11 +78,11 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Mirroring TUF metadata %s to %s\n", o.source, o.destination)
-	root, err := tuf.GetEmbeddedTufRoot(o.rootOptions.tufRoot)
+	root, err := tuf.GetEmbeddedRoot(o.rootOptions.tufRoot)
 	if err != nil {
 		return fmt.Errorf("failed to get root bytes: %w", err)
 	}
-	m, err := mirror.NewTufMirror(root.Data, tufPath, o.source, o.targets, tuf.NewVersionChecker())
+	m, err := mirror.NewTUFMirror(root.Data, tufPath, o.source, o.targets, tuf.NewDefaultVersionChecker())
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}
@@ -95,7 +96,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	// create delegated metadata manifests
-	var delegated []*mirror.MirrorImage
+	var delegated []*mirror.Image
 	if o.rootOptions.full {
 		delegated, err = m.GetDelegatedMetadataMirrors()
 		if err != nil {
@@ -107,14 +108,14 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	switch {
 	case strings.HasPrefix(o.destination, OCIPrefix):
 		path := strings.TrimPrefix(o.destination, OCIPrefix)
-		err = mirror.SaveImageAsOCILayout(image, path)
+		err = oci.SaveImageAsOCILayout(image, path)
 		if err != nil {
 			return fmt.Errorf("failed to save metadata as OCI layout: %w", err)
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Metadata manifest layout saved to %s\n", path)
 		for _, d := range delegated {
 			path := filepath.Join(path, d.Tag)
-			err = mirror.SaveImageAsOCILayout(d.Image, path)
+			err = oci.SaveImageAsOCILayout(d.Image, path)
 			if err != nil {
 				return fmt.Errorf("failed to save delegated metadata as OCI layout: %w", err)
 			}
@@ -122,7 +123,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		}
 	case strings.HasPrefix(o.destination, RegistryPrefix):
 		imageName := strings.TrimPrefix(o.destination, RegistryPrefix)
-		err = mirror.PushImageToRegistry(image, imageName)
+		err = oci.PushImageToRegistry(image, imageName)
 		if err != nil {
 			return fmt.Errorf("failed to push metadata manifest: %w", err)
 		}
@@ -133,7 +134,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("failed to parse image name: %w", err)
 			}
 			imageName := fmt.Sprintf("%s:%s", ref.Context().Name(), d.Tag)
-			err = mirror.PushImageToRegistry(d.Image, imageName)
+			err = oci.PushImageToRegistry(d.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated metadata manifest: %w", err)
 			}
