@@ -69,5 +69,3 @@ require (
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/theupdateframework/go-tuf/v2 => github.com/mrjoelkamp/go-tuf/v2 v2.0.1 // for https://github.com/theupdateframework/go-tuf/pull/632
