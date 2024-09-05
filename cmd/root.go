@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/attest/mirror"
 	"github.com/spf13/cobra"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/docker/attest/pkg/mirror"
+	"github.com/docker/attest/mirror"
 	"github.com/spf13/cobra"
 )
 

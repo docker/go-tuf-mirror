@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/docker/attest/pkg/mirror"
-	"github.com/docker/attest/pkg/oci"
-	"github.com/docker/attest/pkg/tuf"
+	"github.com/docker/attest/mirror"
+	"github.com/docker/attest/oci"
+	"github.com/docker/attest/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/spf13/cobra"
