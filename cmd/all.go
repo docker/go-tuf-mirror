@@ -69,11 +69,11 @@ func (o *allOptions) run(cmd *cobra.Command, args []string) error {
 	_ = targets.PersistentFlags().Set("destination", o.dstTargets)
 	_ = targets.PersistentFlags().Set("metadata", o.srcMeta)
 
-	err := metadata.RunE(metadata, nil)
+	err := metadata.ExecuteContext(cmd.Context())
 	if err != nil {
 		return fmt.Errorf("error mirroring metadata: %w", err)
 	}
-	err = targets.RunE(targets, nil)
+	err = targets.ExecuteContext(cmd.Context())
 	if err != nil {
 		return fmt.Errorf("error mirroring targets: %w", err)
 	}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -68,7 +69,7 @@ func TestAll(t *testing.T) {
 			_ = cmd.Flags().Set("dest-metadata", tc.dstMeta)
 			_ = cmd.Flags().Set("dest-targets", tc.dstTgt)
 
-			err := cmd.Execute()
+			err := cmd.ExecuteContext(context.Background())
 			require.NoError(t, err)
 
 			err = os.RemoveAll("./tmp")
