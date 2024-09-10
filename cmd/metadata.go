@@ -82,7 +82,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get root bytes: %w", err)
 	}
-	m, err := mirror.NewTUFMirror(root.Data, tufPath, o.source, o.targets, tuf.NewDefaultVersionChecker())
+	m, err := mirror.NewTUFMirror(cmd.Context(), root.Data, tufPath, o.source, o.targets, tuf.NewDefaultVersionChecker())
 	if err != nil {
 		return fmt.Errorf("failed to create TUF mirror: %w", err)
 	}
@@ -123,7 +123,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 		}
 	case strings.HasPrefix(o.destination, RegistryPrefix):
 		imageName := strings.TrimPrefix(o.destination, RegistryPrefix)
-		err = oci.PushImageToRegistry(image, imageName)
+		err = oci.PushImageToRegistry(cmd.Context(), image, imageName)
 		if err != nil {
 			return fmt.Errorf("failed to push metadata manifest: %w", err)
 		}
@@ -134,7 +134,7 @@ func (o *metadataOptions) run(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("failed to parse image name: %w", err)
 			}
 			imageName := fmt.Sprintf("%s:%s", ref.Context().Name(), d.Tag)
-			err = oci.PushImageToRegistry(d.Image, imageName)
+			err = oci.PushImageToRegistry(cmd.Context(), d.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated metadata manifest: %w", err)
 			}

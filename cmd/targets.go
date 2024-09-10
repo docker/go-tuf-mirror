@@ -97,7 +97,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to get root bytes: %w", err)
 		}
-		m, err = mirror.NewTUFMirror(root.Data, tufPath, o.metadata, o.source, tuf.NewDefaultVersionChecker())
+		m, err = mirror.NewTUFMirror(cmd.Context(), root.Data, tufPath, o.metadata, o.source, tuf.NewDefaultVersionChecker())
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}
@@ -145,7 +145,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		repo := strings.TrimPrefix(o.destination, RegistryPrefix)
 		for _, t := range targets {
 			imageName := fmt.Sprintf("%s:%s", repo, t.Tag)
-			err = oci.PushImageToRegistry(t.Image, imageName)
+			err = oci.PushImageToRegistry(cmd.Context(), t.Image, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push target manifest: %w", err)
 			}
@@ -153,7 +153,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		}
 		for _, d := range delegated {
 			imageName := fmt.Sprintf("%s:%s", repo, d.Tag)
-			err = oci.PushIndexToRegistry(d.Index, imageName)
+			err = oci.PushIndexToRegistry(cmd.Context(), d.Index, imageName)
 			if err != nil {
 				return fmt.Errorf("failed to push delegated target index manifest: %w", err)
 			}

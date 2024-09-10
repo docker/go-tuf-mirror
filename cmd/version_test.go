@@ -6,6 +6,7 @@ import (
 	"io"
 	"testing"
 
+	av "github.com/docker/attest/version"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,6 +22,8 @@ func TestVersionCommand(t *testing.T) {
 
 	out, err := io.ReadAll(b)
 	require.NoError(t, err)
+	attestVersion, err := av.Get()
+	require.NoError(t, err)
 
-	assert.Equal(t, fmt.Sprintf("go-tuf-mirror: %s\n", version), string(out))
+	assert.Equal(t, fmt.Sprintf("github.com/docker/go-tuf-mirror: %s\ngithub.com/docker/attest: %s\n", version, attestVersion), string(out))
 }
