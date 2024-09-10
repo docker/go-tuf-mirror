@@ -53,9 +53,6 @@ func newRootCmd(version string) *cobra.Command {
 // Execute invokes the command.
 func Execute(version string) error {
 	ctx := context.Background()
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	ctx = useragent.Set(ctx, fmt.Sprintf("go-tuf-mirror/%s (docker)", version))
 	if err := newRootCmd(version).ExecuteContext(ctx); err != nil {
 		return fmt.Errorf("error executing root command: %w", err)
