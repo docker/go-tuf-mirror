@@ -20,7 +20,7 @@ func newVersionCmd(version string) *cobra.Command {
 			fmt.Fprintf(cmd.OutOrStdout(), "github.com/docker/go-tuf-mirror: %s\n", version)
 			attestVersion, err := av.Get()
 			if err != nil {
-				fmt.Fprintf(cmd.OutOrStdout(), "github.com/docker/attest: %s\n", err)
+				fmt.Fprintln(cmd.OutOrStdout(), "github.com/docker/attest: unknown")
 			} else {
 				fmt.Fprintf(cmd.OutOrStdout(), "github.com/docker/attest: %s\n", attestVersion)
 			}
