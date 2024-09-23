@@ -97,7 +97,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to get root bytes: %w", err)
 		}
-		m, err = mirror.NewTUFMirror(cmd.Context(), root.Data, tufPath, o.metadata, o.source, tuf.NewDefaultVersionChecker())
+		m, err = mirror.NewTUFMirror(cmd.Context(), root.Data, tufPath, o.metadata, o.source, &nullVersionChecker{})
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}
