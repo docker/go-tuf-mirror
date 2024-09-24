@@ -10,6 +10,7 @@ import (
 	"github.com/docker/attest/mirror"
 	"github.com/docker/attest/oci"
 	"github.com/docker/attest/tuf"
+	mirrortuf "github.com/docker/go-tuf-mirror/internal/tuf"
 	"github.com/docker/go-tuf-mirror/internal/util"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/spf13/cobra"
@@ -97,7 +98,7 @@ func (o *targetsOptions) run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to get root bytes: %w", err)
 		}
-		m, err = mirror.NewTUFMirror(cmd.Context(), root.Data, tufPath, o.metadata, o.source, &nullVersionChecker{})
+		m, err = mirror.NewTUFMirror(cmd.Context(), root.Data, tufPath, o.metadata, o.source, &mirrortuf.NullVersionChecker{})
 		if err != nil {
 			return fmt.Errorf("failed to create TUF mirror: %w", err)
 		}
