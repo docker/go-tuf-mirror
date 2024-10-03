@@ -80,8 +80,8 @@ github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7 h1:lxmTCgmHE1G
 github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7/go.mod h1:GvWntX9qiTlOud0WkQ6ewFm0LPy5JUR1Xo0Ngbd1w6Y=
 github.com/distribution/reference v0.6.0 h1:0IXCQ5g4/QMHHkarYzh5l+u8T3t73zM5QvfrDyIgxBk=
 github.com/distribution/reference v0.6.0/go.mod h1:BbU0aIcezP1/5jX/8MP0YiH4SdvB5Y4f/wlDRiLyi3E=
-github.com/docker/attest v0.6.4 h1:Y1S7gSy/8iX1JetTmLjrCd/+1UGD1qqewz9Zy3XehGs=
-github.com/docker/attest v0.6.4/go.mod h1:D3DP7mDDR/q+wko8NuM38LykdcU9rDbI+ca0CFkoCEM=
+github.com/docker/attest v0.6.5 h1:d0ekUPq8xaazaB63hrlVP+QYFy7teeGJvwbYJ40/SCo=
+github.com/docker/attest v0.6.5/go.mod h1:dodh28pNfTMlb/5KyRNrBPnYqqzS2ZNoajkt+MULnIw=
 github.com/docker/cli v27.1.1+incompatible h1:goaZxOqs4QKxznZjjBWKONQci/MywhtRv2oNn0GkeZE=
 github.com/docker/cli v27.1.1+incompatible/go.mod h1:JLrzqnKDaYBop7H2jaqPtU4hHvMKP+vjCwu2uszcLI8=
 github.com/docker/distribution v2.8.3+incompatible h1:AtKxIZ36LoNK51+Z6RpzLpddBirtxJnzDrHLEKxTAYk=
@@ -261,8 +261,8 @@ github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d h1:vfofYNRScrDd
 github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d/go.mod h1:RRCYJbIwD5jmqPI9XoAFR0OcDxqUctll6zUj/+B4S48=
 github.com/theupdateframework/go-tuf v0.7.0 h1:CqbQFrWo1ae3/I0UCblSbczevCCbS31Qvs5LdxRWqRI=
 github.com/theupdateframework/go-tuf v0.7.0/go.mod h1:uEB7WSY+7ZIugK6R1hiBMBjQftaFzn7ZCDJcp1tCUug=
-github.com/theupdateframework/go-tuf/v2 v2.0.1 h1:11p9tXpq10KQEujxjcIjDSivMKCMLguls7erXHZnxJQ=
-github.com/theupdateframework/go-tuf/v2 v2.0.1/go.mod h1:baB22nBHeHBCeuGZcIlctNq4P61PcOdyARlplg5xmLA=
+github.com/theupdateframework/go-tuf/v2 v2.0.2 h1:PyNnjV9BJNzN1ZE6BcWK+5JbF+if370jjzO84SS+Ebo=
+github.com/theupdateframework/go-tuf/v2 v2.0.2/go.mod h1:baB22nBHeHBCeuGZcIlctNq4P61PcOdyARlplg5xmLA=
 github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 h1:e/5i7d4oYZ+C1wj2THlRK+oAhjeS/TRQwMfkIuet3w0=
 github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399/go.mod h1:LdwHTNJT99C5fTAzDz0ud328OgXz+gierycbcIx2fRs=
 github.com/transparency-dev/merkle v0.0.2 h1:Q9nBoQcZcgPamMkGn7ghV8XiTZ/kRxn1yCG81+twTK4=
