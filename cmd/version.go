@@ -3,22 +3,23 @@ package cmd
 import (
 	"fmt"
 
-	av "github.com/docker/attest/version"
+	"github.com/docker/attest/version"
 	"github.com/spf13/cobra"
 )
 
-func newVersionCmd(version string) *cobra.Command {
+func newVersionCmd(v string) *cobra.Command {
 	return &cobra.Command{
 		Use:          "version",
 		Short:        "go-tuf-mirror version",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			if version == "" {
-				version = "unknown"
+			if v == "" {
+				v = "unknown"
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "github.com/docker/go-tuf-mirror: %s\n", version)
-			attestVersion, err := av.Get()
+			fmt.Fprintf(cmd.OutOrStdout(), "github.com/docker/go-tuf-mirror: %s\n", v)
+			fetcher := version.NewGoVersionFetcher()
+			attestVersion, err := fetcher.Get()
 			if err != nil {
 				fmt.Fprintln(cmd.OutOrStdout(), "github.com/docker/attest: unknown")
 			} else {

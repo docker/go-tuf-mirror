@@ -22,7 +22,8 @@ func TestVersionCommand(t *testing.T) {
 
 	out, err := io.ReadAll(b)
 	require.NoError(t, err)
-	attestVersion, err := av.Get()
+	fetcher := av.NewGoVersionFetcher()
+	attestVersion, err := fetcher.Get()
 	require.NoError(t, err)
 
 	assert.Equal(t, fmt.Sprintf("github.com/docker/go-tuf-mirror: %s\ngithub.com/docker/attest: %s\n", version, attestVersion), string(out))
