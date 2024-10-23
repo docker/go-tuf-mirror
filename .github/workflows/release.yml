@@ -14,13 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Generate GitHub App Token
-        id: app-token
-        uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.DOCKER_READ_APP_PRIVATE_KEY }}
-          repositories: "attest,go-tuf-mirror"
       - name: Authenticate to AWS
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
         with:
@@ -62,8 +55,6 @@ jobs:
           outputs: type=oci,tar=false,dest=./unsigned-image
           attests: type=sbom,generator=docker/scout-sbom-indexer:1
           provenance: mode=max
-          secrets: |
-            GITHUB_TOKEN=${{ steps.app-token.outputs.token }}
       - name: Sign and push
         uses: docker/image-signer-verifier/actions/sign@7e791e4c287d1976e457e6e1d1fa9d6f045ffdcc # v0.6.4
         with:
