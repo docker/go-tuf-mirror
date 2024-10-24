@@ -3,7 +3,7 @@ module github.com/docker/go-tuf-mirror
 go 1.22.8
 
 require (
-	github.com/docker/attest v0.6.7
+	github.com/docker/attest v0.6.8
 	github.com/google/go-containerregistry v0.20.2
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
