@@ -6,7 +6,7 @@ require (
 	github.com/docker/attest v0.6.8
 	github.com/google/go-containerregistry v0.20.2
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 // fork with changes to support ArtifactType (https://github.com/google/go-containerregistry/pull/1931)
